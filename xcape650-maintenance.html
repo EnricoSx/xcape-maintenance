@@ -1,0 +1,998 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X-Cape 650 — Maintenance Manager</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --red:       #C8102E;
+      --red-dark:  #A00D24;
+      --dark:      #111111;
+      --surface:   #FFFFFF;
+      --surface2:  #F4F4F4;
+      --border:    #E2E2E2;
+      --text:      #1A1A1A;
+      --muted:     #777777;
+      --yellow:    #FFB800;
+      --green:     #00A651;
+      --orange:    #E65C00;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Barlow', sans-serif;
+      background: var(--surface2);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── CONFIG BANNER ── */
+    #config-banner {
+      display: none;
+      background: var(--yellow);
+      color: #111;
+      text-align: center;
+      padding: 10px 20px;
+      font-family: 'Barlow Condensed', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+    }
+    #config-banner a { color: var(--red); }
+
+    /* ── HEADER ── */
+    header {
+      background: var(--dark);
+      color: white;
+      display: grid;
+      grid-template-columns: 300px 1fr 160px 160px;
+      min-height: 160px;
+      overflow: hidden;
+    }
+
+    .hd-brand {
+      background: var(--red);
+      padding: 20px 24px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+    .hd-brand .sub  { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; opacity:.85; }
+    .hd-brand h1    { font-family:'Barlow Condensed',sans-serif; font-size:2.5rem; font-weight:800; line-height:1; margin:.2rem 0; }
+    .hd-brand .mgr  { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; opacity:.7; }
+    .hd-brand .clock{ font-family:'Barlow Condensed',sans-serif; font-size:.9rem; font-weight:600; opacity:.9; margin-top:10px; }
+
+    .hd-bike {
+      display: flex;
+      align-items: flex-end;
+      justify-content: center;
+      overflow: hidden;
+      background: linear-gradient(to right, var(--dark), #1a1a1a);
+    }
+    .hd-bike img { height: 160px; object-fit: cover; filter: drop-shadow(0 0 24px rgba(200,16,46,.35)); }
+    .hd-bike .placeholder {
+      color: #333;
+      font-family:'Barlow Condensed',sans-serif;
+      font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
+      text-align:center; padding:20px;
+    }
+
+    .hd-stat {
+      background: #161616;
+      border-left: 1px solid #2a2a2a;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; padding: 20px;
+    }
+    .hd-stat .lbl { font-family:'Barlow Condensed',sans-serif; font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#666; margin-bottom:8px; }
+    .hd-stat .val { font-family:'Barlow Condensed',sans-serif; font-size:2.8rem; font-weight:800; line-height:1; color:white; }
+    .hd-stat .val.warn   { color: var(--yellow); }
+    .hd-stat .val.danger { color: var(--red);    }
+
+    /* ── MAIN LAYOUT ── */
+    main {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 24px 20px;
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      align-items: start;
+    }
+    .sidebar { display:flex; flex-direction:column; gap:20px; }
+    .content { display:flex; flex-direction:column; gap:20px; }
+
+    /* ── CARDS ── */
+    .card {
+      background: var(--surface);
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,.07);
+      overflow: hidden;
+    }
+    .card-head {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; gap: 8px;
+    }
+    .card-head h2 { font-family:'Barlow Condensed',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); }
+    .card-body { padding: 20px; }
+
+    /* ── INPUT KM ── */
+    .km-row { display:flex; gap:10px; }
+    .km-row input {
+      flex:1; padding:12px 16px;
+      border:2px solid var(--border); border-radius:6px;
+      font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:700;
+      color:var(--text); outline:none; transition:border-color .2s;
+    }
+    .km-row input:focus { border-color:var(--red); }
+
+    /* ── BUTTONS ── */
+    .btn {
+      border:none; border-radius:6px; cursor:pointer;
+      font-family:'Barlow Condensed',sans-serif; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      transition:background .15s, transform .1s; white-space:nowrap;
+    }
+    .btn:active { transform:scale(.97); }
+    .btn-red  { background:var(--red);    color:white;         padding:12px 20px; font-size:1rem; }
+    .btn-red:hover { background:var(--red-dark); }
+    .btn-sm   { padding:5px 10px; font-size:.78rem; }
+    .btn-ghost { background:var(--surface2); color:var(--muted); }
+    .btn-ghost:hover { background:var(--border); }
+    .btn-edit  { background:#E3F2FD; color:#1565C0; }
+    .btn-edit:hover { background:#BBDEFB; }
+    .btn-del   { background:#FFEBEE; color:var(--red); }
+    .btn-del:hover { background:#FFCDD2; }
+    .btn-ok    { background:var(--green); color:white; }
+    .btn-ok:hover { background:#008040; }
+
+    /* ── NEXT SERVICE ── */
+    .card.next-card { border-left:4px solid var(--red); }
+    .ns-km    { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:800; color:var(--red); }
+    .ns-label { font-family:'Barlow Condensed',sans-serif; font-size:.82rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:4px 0 12px; }
+    .ns-list  { list-style:none; }
+    .ns-list li {
+      display:flex; align-items:flex-start; gap:6px;
+      padding:5px 0; font-size:.875rem;
+      border-bottom:1px solid var(--border);
+    }
+    .ns-list li:last-child { border-bottom:none; }
+
+    /* ── BADGES ── */
+    .badge {
+      font-family:'Barlow Condensed',sans-serif; font-size:.6rem; font-weight:700;
+      letter-spacing:.08em; text-transform:uppercase;
+      padding:2px 6px; border-radius:3px; white-space:nowrap; margin-top:1px;
+    }
+    .badge-m  { background:var(--red);    color:white; }
+    .badge-d  { background:#E8F5E9; color:#2E7D32; }
+
+    /* ── STATS BOX ── */
+    .total-cost { font-family:'Barlow Condensed',sans-serif; font-size:3rem; font-weight:800; color:var(--red); text-align:center; padding:16px 0 4px; line-height:1; }
+    .total-lbl  { font-family:'Barlow Condensed',sans-serif; font-size:.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); text-align:center; margin-bottom:14px; }
+    .sg { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+    .si { background:var(--surface2); border-radius:6px; padding:14px; text-align:center; }
+    .si-val { font-family:'Barlow Condensed',sans-serif; font-size:1.9rem; font-weight:800; color:var(--red); line-height:1; }
+    .si-lbl { font-family:'Barlow Condensed',sans-serif; font-size:.65rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+
+    /* ── LOG TABLE ── */
+    .tbl-wrap { overflow-x:auto; }
+    table.log {
+      width:100%; border-collapse:collapse; font-size:.875rem;
+    }
+    table.log th {
+      font-family:'Barlow Condensed',sans-serif; font-size:.68rem; font-weight:700;
+      letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
+      padding:10px 12px; text-align:left;
+      border-bottom:2px solid var(--border); background:var(--surface2);
+      white-space:nowrap;
+    }
+    table.log td {
+      padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:middle;
+    }
+    table.log tr.new-row td { background:#FFF7F7; }
+    table.log tr:last-child td { border-bottom:none; }
+
+    table.log input[type=date],
+    table.log input[type=number],
+    table.log input[type=text],
+    table.log textarea {
+      width:100%; padding:6px 8px;
+      border:1px solid var(--border); border-radius:4px;
+      font-family:'Barlow',sans-serif; font-size:.875rem; color:var(--text);
+      background:white; outline:none; transition:border-color .2s;
+      resize:vertical;
+    }
+    table.log input:focus,
+    table.log textarea:focus { border-color:var(--red); }
+    table.log input[type=checkbox] { width:16px; height:16px; accent-color:var(--red); cursor:pointer; }
+    .act-col { display:flex; flex-direction:column; gap:4px; }
+
+    /* ── SCHEDULE TABLE ── */
+    table.sched {
+      width:100%; border-collapse:collapse; font-size:.875rem;
+    }
+    table.sched th {
+      font-family:'Barlow Condensed',sans-serif; font-size:.68rem; font-weight:700;
+      letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
+      padding:10px 12px; text-align:left;
+      border-bottom:2px solid var(--border); background:var(--surface2);
+    }
+    table.sched td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
+    table.sched tr:last-child td { border-bottom:none; }
+    .km-tag { font-family:'Barlow Condensed',sans-serif; font-size:1.05rem; font-weight:800; }
+    .s-done   { color:var(--green);  font-weight:700; font-family:'Barlow Condensed',sans-serif; }
+    .s-near   { color:var(--yellow); font-weight:700; font-family:'Barlow Condensed',sans-serif; }
+    .s-over   { color:var(--red);    font-weight:700; font-family:'Barlow Condensed',sans-serif; }
+    .s-future { color:var(--muted);  font-family:'Barlow Condensed',sans-serif; }
+
+    /* ── TOAST ── */
+    .toast {
+      position:fixed; bottom:24px; right:24px; z-index:9999;
+      background:var(--dark); color:white;
+      padding:11px 18px; border-radius:6px;
+      font-family:'Barlow Condensed',sans-serif; font-size:.95rem; font-weight:600;
+      opacity:0; transform:translateY(8px); pointer-events:none;
+      transition:all .25s ease;
+    }
+    .toast.show { opacity:1; transform:translateY(0); }
+    .toast.ok  { border-left:4px solid var(--green); }
+    .toast.err { border-left:4px solid var(--red);   }
+
+    /* ── LOADING ── */
+    .loading {
+      text-align:center; padding:30px;
+      color:var(--muted); font-family:'Barlow Condensed',sans-serif;
+      font-size:.9rem; letter-spacing:.1em; text-transform:uppercase;
+    }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:960px) {
+      main { grid-template-columns:1fr; }
+      header { grid-template-columns:1fr 1fr; grid-template-rows:auto auto; }
+      .hd-bike { display:none; }
+    }
+    @media(max-width:560px) {
+      header { grid-template-columns:1fr; }
+      .hd-stat { flex-direction:row; justify-content:space-between; padding:14px 20px; }
+      .hd-stat .val { font-size:2rem; }
+      table.log { font-size:.8rem; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="config-banner">
+  ⚠️ Supabase non configurato — i dati vengono salvati solo su questo browser.
+  Apri il file e imposta <strong>https://supabase.com/dashboard/project/lctejnebiowgzphtifqo</strong> e <strong>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxjdGVqbmViaW93Z3pwaHRpZnFvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM1NjUzMTcsImV4cCI6MjA4OTE0MTMxN30.cwtordrk_sZL5_fWfr-4Ib_qgRdnZb7soDezsy9KLLk</strong> per la sincronizzazione multi-device.
+</div>
+
+<header>
+  <!-- Brand -->
+  <div class="hd-brand">
+    <div>
+      <div class="sub">Moto Morini</div>
+      <h1>X&#8209;CAPE 650</h1>
+      <div class="mgr">Maintenance Manager</div>
+    </div>
+    <div class="clock" id="clock"></div>
+  </div>
+
+  <!-- Bike image — metti qui il tuo file bike.png -->
+  <div class="hd-bike">
+    <img src="bike.png" alt="X-Cape 650"
+         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+    <div class="placeholder" style="display:none">
+      Inserisci <strong>bike.png</strong><br>nella stessa cartella
+    </div>
+  </div>
+
+  <!-- KM Attuali -->
+  <div class="hd-stat">
+    <div class="lbl">KM Attuali</div>
+    <div class="val" id="hd-km">—</div>
+  </div>
+
+  <!-- Al Tagliando -->
+  <div class="hd-stat">
+    <div class="lbl">Al Tagliando</div>
+    <div class="val warn" id="hd-tag">—</div>
+  </div>
+</header>
+
+<main>
+  <!-- ── SIDEBAR ── -->
+  <div class="sidebar">
+
+    <!-- Input KM -->
+    <div class="card">
+      <div class="card-head"><span>🔢</span><h2>Aggiorna Chilometri</h2></div>
+      <div class="card-body">
+        <div class="km-row">
+          <input type="number" id="km-in" placeholder="0..." min="0" step="1"
+                 onkeydown="if(event.key==='Enter')saveKm()">
+          <button class="btn btn-red" onclick="saveKm()">OK</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Prossimo intervento -->
+    <div class="card next-card">
+      <div class="card-head"><span>🔧</span><h2 id="ns-title">Prossimo Intervento</h2></div>
+      <div class="card-body" id="ns-body"><div class="loading">Caricamento…</div></div>
+    </div>
+
+    <!-- Statistiche costi -->
+    <div class="card">
+      <div class="card-body">
+        <div class="total-cost" id="s-total">€0.00</div>
+        <div class="total-lbl">Investimento Totale</div>
+        <div class="sg">
+          <div class="si"><div class="si-val" id="s-count">0</div><div class="si-lbl">Interventi</div></div>
+          <div class="si"><div class="si-val" id="s-avg">€0</div><div class="si-lbl">Media Costo</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── CONTENT ── -->
+  <div class="content">
+
+    <!-- Registro Interventi -->
+    <div class="card">
+      <div class="card-head"><span>🔩</span><h2>Registro Interventi</h2></div>
+      <div class="tbl-wrap">
+        <table class="log">
+          <thead>
+            <tr>
+              <th style="width:120px">Data</th>
+              <th style="width:90px">KM</th>
+              <th>Descrizione</th>
+              <th style="width:100px">Costo (€)</th>
+              <th style="width:54px;text-align:center">Mecc.</th>
+              <th style="width:88px">Azioni</th>
+            </tr>
+          </thead>
+          <tbody id="log-body">
+            <!-- new-row inserted by JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Scadenziario -->
+    <div class="card">
+      <div class="card-head"><span>📋</span><h2>Scadenziario Completo</h2></div>
+      <div class="tbl-wrap">
+        <table class="sched">
+          <thead>
+            <tr>
+              <th style="width:90px">Km</th>
+              <th style="width:200px">Tagliando</th>
+              <th>Operazioni principali</th>
+              <th style="width:130px">Stato</th>
+            </tr>
+          </thead>
+          <tbody id="sched-body"><tr><td colspan="4" class="loading">Caricamento…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Trend chilometrico -->
+    <div class="card">
+      <div class="card-head"><span>📈</span><h2>Trend Chilometrico</h2></div>
+      <div class="card-body">
+        <canvas id="km-chart" height="110"></canvas>
+        <div id="chart-empty" class="loading" style="display:none">
+          Inserisci almeno due rilevazioni per visualizzare il grafico
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================================================
+   CONFIGURAZIONE — sostituisci con i tuoi valori Supabase
+   ============================================================ */
+const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+
+/* ============================================================
+   PIANO DI MANUTENZIONE — fonte: Manuale X-Cape 650 Ed.2 2022
+   meccanico: true  = officina consigliata
+   meccanico: false = operazione fai-da-te
+   ============================================================ */
+const BASE_ITEMS_6000 = [
+  { d:'Cambio olio motore',                             m:true  },
+  { d:'Sostituzione filtro olio',                       m:true  },
+  { d:'Pulizia filtro aria',                            m:true  },
+  { d:'Lubrificazione e tensione catena trasmissione',  m:false },
+  { d:'Controllo regime minimo',                        m:true  },
+  { d:'Controllo sistema acceleratore',                 m:true  },
+  { d:'Controllo funzionamento frizione',               m:true  },
+  { d:'Controllo pressione pneumatici',                 m:false },
+  { d:'Controllo volume e perdite refrigerante',        m:false },
+  { d:'Controllo perdita e volume liquido freni',       m:false },
+  { d:'Controllo efficienza e interruttore freni',      m:false },
+  { d:'Verifica coppia bulloni e dadi',                 m:true  },
+];
+
+const MILESTONES = [
+  {
+    km: 1000,
+    label: '1° Tagliando (Rodaggio)',
+    items: [
+      { d:'Cambio olio motore — primo riempimento',       m:true  },
+      { d:'Sostituzione filtro olio',                     m:true  },
+      { d:'Lubrificazione e tensione catena trasmissione',m:false },
+      { d:'Controllo sistema acceleratore',               m:true  },
+      { d:'Controllo perdita carburante e tubazioni',     m:false },
+      { d:'Controllo volume e perdite refrigerante',      m:false },
+      { d:'Controllo danni radiatore e tubazioni',        m:false },
+      { d:'Controllo perdita e volume liquido freni',     m:false },
+      { d:'Controllo efficienza freni',                   m:false },
+      { d:'Controllo gioco sterzo',                       m:true  },
+      { d:'Verifica coppia bulloni e dadi',               m:true  },
+    ]
+  },
+  {
+    km: 6000,
+    label: 'Tagliando 6.000 km',
+    items: BASE_ITEMS_6000
+  },
+  {
+    km: 12000,
+    label: 'Tagliando 12.000 km',
+    items: [
+      { d:'Cambio olio motore',                               m:true  },
+      { d:'Sostituzione filtro olio',                         m:true  },
+      { d:'Sostituzione filtro aria',                         m:true  },
+      { d:'Sostituzione candela',                             m:true  },
+      { d:'Verifica usura catena e protezione catena',        m:true  },
+      { d:'Ispezione usura pastiglie freni',                  m:true  },
+      { d:'Controllo forcella ant. / ammortizzatore post.',   m:true  },
+      { d:'Controllo perdita olio idraulico forcella',        m:true  },
+      { d:'Controllo pressione e usura pneumatici',           m:false },
+      { d:'Controllo danni cuscinetti cerchi',                m:true  },
+      { d:'Pulizia corpo valvola a farfalla',                 m:true  },
+      { d:'Controllo danni sistema aspirazione',              m:true  },
+      { d:'Controllo gioco sterzo',                           m:true  },
+      { d:'Controllo volume e perdite refrigerante',          m:false },
+      { d:'Controllo sistema elettrico (luci, interruttori)', m:true  },
+      { d:'Verifica coppia bulloni e dadi',                   m:true  },
+    ]
+  },
+  {
+    km: 18000,
+    label: 'Tagliando 18.000 km',
+    items: BASE_ITEMS_6000
+  },
+  {
+    km: 24000,
+    label: 'Tagliando 24.000 km',
+    items: [
+      { d:'Cambio olio motore',                              m:true  },
+      { d:'Sostituzione filtro olio',                        m:true  },
+      { d:'Sostituzione filtro aria',                        m:true  },
+      { d:'Sostituzione candela',                            m:true  },
+      { d:'Sostituzione liquido freni (ant./post.)',         m:true  },
+      { d:'Verifica usura catena e protezione catena',       m:true  },
+      { d:'Ispezione usura pastiglie freni',                 m:true  },
+      { d:'Controllo forcella ant. / ammortizzatore post.',  m:true  },
+      { d:'Controllo gioco sterzo',                          m:true  },
+      { d:'Controllo pressione e usura pneumatici',          m:false },
+      { d:'Verifica coppia bulloni e dadi',                  m:true  },
+    ]
+  },
+  {
+    km: 30000,
+    label: 'Tagliando 30.000 km',
+    items: BASE_ITEMS_6000
+  },
+  {
+    km: 36000,
+    label: 'Tagliando 36.000 km',
+    items: [
+      { d:'Cambio olio motore',                              m:true  },
+      { d:'Sostituzione filtro olio',                        m:true  },
+      { d:'Sostituzione filtro aria',                        m:true  },
+      { d:'Sostituzione candela',                            m:true  },
+      { d:'Sostituzione refrigerante',                       m:true  },
+      { d:'Sostituzione radiatore e tubazioni',              m:true  },
+      { d:'Sostituzione liquido freni (ant./post.)',         m:true  },
+      { d:'Verifica usura catena e pignone',                 m:true  },
+      { d:'Ispezione usura pastiglie freni',                 m:true  },
+      { d:'Controllo forcella ant. / ammortizzatore post.',  m:true  },
+      { d:'Lubrificazione cuscinetto sterzo',                m:true  },
+      { d:'Controllo pressione e usura pneumatici',          m:false },
+      { d:'Verifica coppia bulloni e dadi',                  m:true  },
+    ]
+  },
+  {
+    km: 42000,
+    label: 'Tagliando 42.000 km',
+    items: [
+      { d:'Cambio olio motore',                              m:true  },
+      { d:'Sostituzione filtro olio',                        m:true  },
+      { d:'Pulizia filtro aria',                             m:true  },
+      { d:'Controllo e regolazione giochi valvole',          m:true  },
+      { d:'Lubrificazione e tensione catena trasmissione',   m:false },
+      { d:'Verifica coppia bulloni e dadi',                  m:true  },
+    ]
+  },
+  {
+    km: 48000,
+    label: 'Tagliando 48.000 km',
+    items: [
+      { d:'Cambio olio motore',                              m:true  },
+      { d:'Sostituzione filtro olio',                        m:true  },
+      { d:'Sostituzione filtro aria',                        m:true  },
+      { d:'Sostituzione candela',                            m:true  },
+      { d:'Sostituzione tubo del carburante',                m:true  },
+      { d:'Sostituzione tubo liquido freni',                 m:true  },
+      { d:'Sostituzione guarnizione pompa freni',            m:true  },
+      { d:'Sostituzione liquido freni (ant./post.)',         m:true  },
+      { d:'Verifica usura catena e pignone',                 m:true  },
+      { d:'Ispezione usura pastiglie freni',                 m:true  },
+      { d:'Controllo forcella ant. / ammortizzatore post.',  m:true  },
+      { d:'Lubrificazione cuscinetto sterzo',                m:true  },
+      { d:'Verifica coppia bulloni e dadi',                  m:true  },
+    ]
+  },
+];
+
+/* ============================================================
+   STATO APP
+   ============================================================ */
+let sb         = null;   // Supabase client (null = usa localStorage)
+let currentKm  = 0;
+let kmHistory  = [];     // [{ id, km, recorded_at }]
+let logEntries = [];     // [{ id, data, km, descrizione, costo, meccanico }]
+let editingId  = null;
+let kmChart    = null;
+
+/* ============================================================
+   INIT
+   ============================================================ */
+async function init() {
+  startClock();
+  setTodayOnNewRow();
+
+  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
+    document.getElementById('config-banner').style.display = 'block';
+    loadFromStorage();
+    return;
+  }
+
+  try {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    await loadFromSupabase();
+  } catch (e) {
+    console.error(e);
+    toast('Errore Supabase, uso localStorage', 'err');
+    loadFromStorage();
+  }
+}
+
+/* ── localStorage ── */
+function loadFromStorage() {
+  kmHistory  = JSON.parse(localStorage.getItem('xcape_km')  || '[]');
+  logEntries = JSON.parse(localStorage.getItem('xcape_log') || '[]');
+  currentKm  = kmHistory.length ? kmHistory.at(-1).km : 0;
+  render();
+}
+
+/* ── Supabase ── */
+async function loadFromSupabase() {
+  const [{ data: kd, error: ke }, { data: ld, error: le }] = await Promise.all([
+    sb.from('km_log').select('*').order('recorded_at', { ascending: true }),
+    sb.from('maintenance_log').select('*').order('data', { ascending: false }),
+  ]);
+  if (ke) throw ke;
+  if (le) throw le;
+  kmHistory  = kd  || [];
+  logEntries = ld  || [];
+  currentKm  = kmHistory.length ? kmHistory.at(-1).km : 0;
+  render();
+}
+
+function render() {
+  updateHeader();
+  renderNextService();
+  renderSchedule();
+  renderLog();
+  renderChart();
+  renderStats();
+}
+
+/* ============================================================
+   SAVE KM
+   ============================================================ */
+async function saveKm() {
+  const km = parseInt(document.getElementById('km-in').value);
+  if (!km || isNaN(km) || km < 0)  return toast('Inserisci km validi', 'err');
+  if (km < currentKm)              return toast(`Valore inferiore agli attuali ${currentKm.toLocaleString('it')} km`, 'err');
+
+  const entry = { km };
+
+  if (sb) {
+    const { data, error } = await sb.from('km_log').insert([entry]).select().single();
+    if (error) return toast('Errore salvataggio', 'err');
+    kmHistory.push(data);
+  } else {
+    const rec = { id: Date.now(), km, recorded_at: new Date().toISOString() };
+    kmHistory.push(rec);
+    localStorage.setItem('xcape_km', JSON.stringify(kmHistory));
+  }
+
+  currentKm = km;
+  document.getElementById('km-in').value = '';
+  document.getElementById('km-in').placeholder = `${km.toLocaleString('it')}…`;
+
+  updateHeader();
+  renderNextService();
+  renderSchedule();
+  renderChart();
+  toast(`✅ ${km.toLocaleString('it')} km salvati`, 'ok');
+}
+
+/* ============================================================
+   SAVE / EDIT / DELETE LOG
+   ============================================================ */
+async function saveLog() {
+  const data       = document.getElementById('nr-data').value;
+  const km         = parseInt(document.getElementById('nr-km').value)    || null;
+  const descrizione= document.getElementById('nr-desc').value.trim();
+  const costo      = parseFloat(document.getElementById('nr-costo').value) || 0;
+  const meccanico  = document.getElementById('nr-mecc').checked;
+
+  if (!data)        return toast('Inserisci la data', 'err');
+  if (!descrizione) return toast('Inserisci una descrizione', 'err');
+
+  const entry = { data, km, descrizione, costo, meccanico };
+
+  if (sb) {
+    const { data: saved, error } = await sb.from('maintenance_log').insert([entry]).select().single();
+    if (error) return toast('Errore salvataggio', 'err');
+    logEntries.unshift(saved);
+  } else {
+    const rec = { id: Date.now(), ...entry };
+    logEntries.unshift(rec);
+    localStorage.setItem('xcape_log', JSON.stringify(logEntries));
+  }
+
+  clearNewRow();
+  renderLog();
+  renderStats();
+  toast('✅ Intervento salvato', 'ok');
+}
+
+async function saveEdit(id) {
+  const row  = document.querySelector(`tr[data-id="${id}"]`);
+  const data       = row.querySelector('.e-data').value;
+  const km         = parseInt(row.querySelector('.e-km').value)    || null;
+  const descrizione= row.querySelector('.e-desc').value.trim();
+  const costo      = parseFloat(row.querySelector('.e-costo').value) || 0;
+  const meccanico  = row.querySelector('.e-mecc').checked;
+
+  if (!data || !descrizione) return toast('Data e descrizione obbligatorie', 'err');
+
+  const upd = { data, km, descrizione, costo, meccanico };
+
+  if (sb) {
+    const { error } = await sb.from('maintenance_log').update(upd).eq('id', id);
+    if (error) return toast('Errore aggiornamento', 'err');
+  }
+
+  const i = logEntries.findIndex(e => e.id === id);
+  if (i >= 0) logEntries[i] = { ...logEntries[i], ...upd };
+  if (!sb) localStorage.setItem('xcape_log', JSON.stringify(logEntries));
+
+  editingId = null;
+  renderLog();
+  renderStats();
+  toast('✅ Intervento aggiornato', 'ok');
+}
+
+async function deleteLog(id) {
+  if (!confirm('Eliminare questo intervento?')) return;
+
+  if (sb) {
+    const { error } = await sb.from('maintenance_log').delete().eq('id', id);
+    if (error) return toast('Errore eliminazione', 'err');
+  }
+
+  logEntries = logEntries.filter(e => e.id !== id);
+  if (!sb) localStorage.setItem('xcape_log', JSON.stringify(logEntries));
+
+  renderLog();
+  renderStats();
+  toast('Intervento eliminato', 'ok');
+}
+
+/* ============================================================
+   LOGICA MANUTENZIONE
+   ============================================================ */
+function getNextMilestone() {
+  // milestoni principali
+  const mainNext = MILESTONES.find(m => m.km > currentKm);
+  // catena lubrificazione ogni 600 km
+  const nextCatena = Math.ceil((currentKm + 1) / 600) * 600;
+
+  if (!mainNext) return { km: nextCatena, label:'Check Catena', items:[ { d:'Lubrificazione catena trasmissione', m:false } ] };
+  if (nextCatena < mainNext.km) return { km: nextCatena, label:'Check Catena', items:[ { d:'Lubrificazione catena trasmissione', m:false } ] };
+  return mainNext;
+}
+
+/* ============================================================
+   RENDER — HEADER
+   ============================================================ */
+function updateHeader() {
+  document.getElementById('hd-km').textContent = currentKm.toLocaleString('it');
+  const next  = getNextMilestone();
+  const diff  = currentKm - next.km;          // neg = mancanti, pos = scaduto
+  const el    = document.getElementById('hd-tag');
+  el.textContent = diff.toLocaleString('it');
+  el.className   = 'val ' + (diff >= 0 ? 'danger' : (next.km - currentKm < 500 ? 'warn' : ''));
+}
+
+/* ============================================================
+   RENDER — NEXT SERVICE
+   ============================================================ */
+function renderNextService() {
+  const next      = getNextMilestone();
+  const remaining = next.km - currentKm;
+  const overdue   = remaining <= 0;
+
+  document.getElementById('ns-title').textContent =
+    overdue ? `⚠️ SCADUTO: ${next.label}` : `Prossimo Step: ${next.km.toLocaleString('it')} km`;
+
+  document.getElementById('ns-body').innerHTML = `
+    <div class="ns-km">${overdue
+      ? `+${Math.abs(remaining).toLocaleString('it')} km scaduto`
+      : `${remaining.toLocaleString('it')} km mancanti`}</div>
+    <div class="ns-label">${next.label}</div>
+    <ul class="ns-list">
+      ${(next.items || []).map(i => `
+        <li>
+          <span class="badge ${i.m ? 'badge-m':'badge-d'}">${i.m ? 'Mecc.':'DIY'}</span>
+          ${esc(i.d)}
+        </li>`).join('')}
+    </ul>`;
+}
+
+/* ============================================================
+   RENDER — SCADENZIARIO
+   ============================================================ */
+function renderSchedule() {
+  const tbody = document.getElementById('sched-body');
+  tbody.innerHTML = MILESTONES.map(({ km, label, items }) => {
+    const diff = currentKm - km;
+    // controlla se esiste un log vicino a questo km (±1500 km)
+    const hasLog = logEntries.some(e => e.km && Math.abs(e.km - km) <= 1500);
+
+    let cls, txt;
+    if (diff >= 0 && hasLog)      { cls='s-done';   txt='✅ Registrato';                         }
+    else if (diff > 500)           { cls='s-over';   txt=`🔴 Scaduto di +${diff.toLocaleString('it')} km`; }
+    else if (diff >= 0)            { cls='s-near';   txt=`⚠️ Nessun log — ${diff} km fa`;        }
+    else if (km - currentKm < 800){ cls='s-near';   txt=`⚠️ ${(km-currentKm).toLocaleString('it')} km`;   }
+    else                           { cls='s-future'; txt=`${(km-currentKm).toLocaleString('it')} km`;       }
+
+    const preview = items.slice(0,3).map(i=>i.d).join(', ')
+      + (items.length > 3 ? ` <em style="color:var(--muted)">+${items.length-3} altro</em>` : '');
+
+    return `<tr>
+      <td><span class="km-tag">${km.toLocaleString('it')}</span></td>
+      <td style="font-weight:600">${label}</td>
+      <td style="font-size:.8rem;color:var(--muted)">${preview}</td>
+      <td class="${cls}">${txt}</td>
+    </tr>`;
+  }).join('');
+}
+
+/* ============================================================
+   RENDER — LOG TABLE
+   ============================================================ */
+function renderLog() {
+  const tbody = document.getElementById('log-body');
+  tbody.innerHTML = '';
+
+  // ── new-row sempre in testa ──
+  const nr = document.createElement('tr');
+  nr.className = 'new-row';
+  nr.id = 'new-row';
+  nr.innerHTML = `
+    <td><input type="date"   id="nr-data"></td>
+    <td><input type="number" id="nr-km"   placeholder="KM"   min="0"></td>
+    <td><textarea id="nr-desc" rows="2"   placeholder="Descrizione intervento…"></textarea></td>
+    <td><input type="number" id="nr-costo" placeholder="0.00" step="0.01" min="0"></td>
+    <td style="text-align:center"><input type="checkbox" id="nr-mecc"></td>
+    <td>
+      <div class="act-col">
+        <button class="btn btn-red btn-sm" onclick="saveLog()">SALVA</button>
+        <button class="btn btn-ghost btn-sm" onclick="clearNewRow()">↺ PULISCI</button>
+      </div>
+    </td>`;
+  tbody.appendChild(nr);
+  setTodayOnNewRow();
+
+  if (!logEntries.length) {
+    const er = document.createElement('tr');
+    er.innerHTML = `<td colspan="6" style="text-align:center;color:var(--muted);padding:18px;font-style:italic">Nessun intervento registrato</td>`;
+    tbody.appendChild(er);
+    return;
+  }
+
+  logEntries.forEach(e => {
+    const tr = document.createElement('tr');
+    tr.setAttribute('data-id', e.id);
+
+    if (editingId === e.id) {
+      tr.innerHTML = `
+        <td><input type="date"   class="e-data"  value="${e.data}"></td>
+        <td><input type="number" class="e-km"    value="${e.km||''}" placeholder="KM"></td>
+        <td><textarea class="e-desc" rows="2">${esc(e.descrizione)}</textarea></td>
+        <td><input type="number" class="e-costo" value="${e.costo||0}" step="0.01"></td>
+        <td style="text-align:center"><input type="checkbox" class="e-mecc" ${e.meccanico?'checked':''}></td>
+        <td>
+          <div class="act-col">
+            <button class="btn btn-ok   btn-sm" onclick="saveEdit(${e.id})">✔ SALVA</button>
+            <button class="btn btn-ghost btn-sm" onclick="editingId=null;renderLog()">✕</button>
+          </div>
+        </td>`;
+    } else {
+      const badge = e.meccanico
+        ? `<span class="badge badge-m">Mecc.</span>`
+        : `<span class="badge badge-d">DIY</span>`;
+      tr.innerHTML = `
+        <td style="white-space:nowrap;font-size:.85rem">${fmtDate(e.data)}</td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">${e.km ? e.km.toLocaleString('it') : '—'}</td>
+        <td style="font-size:.875rem;white-space:pre-wrap">${esc(e.descrizione)}</td>
+        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:600">€${parseFloat(e.costo||0).toFixed(2)}</td>
+        <td style="text-align:center">${badge}</td>
+        <td>
+          <div class="act-col">
+            <button class="btn btn-edit btn-sm" onclick="editingId=${e.id};renderLog()">✎ MOD</button>
+            <button class="btn btn-del  btn-sm" onclick="deleteLog(${e.id})">✕ DEL</button>
+          </div>
+        </td>`;
+    }
+    tbody.appendChild(tr);
+  });
+}
+
+/* ============================================================
+   RENDER — CHART
+   ============================================================ */
+function renderChart() {
+  const canvas = document.getElementById('km-chart');
+  const empty  = document.getElementById('chart-empty');
+
+  if (kmHistory.length < 2) {
+    canvas.style.display = 'none';
+    empty.style.display  = 'block';
+    return;
+  }
+  canvas.style.display = 'block';
+  empty.style.display  = 'none';
+
+  const labels = kmHistory.map(e => {
+    const d = new Date(e.recorded_at);
+    return d.toLocaleDateString('it', { day:'2-digit', month:'short' });
+  });
+  const data = kmHistory.map(e => e.km);
+
+  if (kmChart) kmChart.destroy();
+  kmChart = new Chart(canvas.getContext('2d'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data,
+        borderColor:     '#C8102E',
+        backgroundColor: 'rgba(200,16,46,.08)',
+        borderWidth: 2.5,
+        pointBackgroundColor: '#C8102E',
+        pointRadius: 4,
+        fill: true,
+        tension: 0.35,
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: { callbacks: { label: c => `${c.parsed.y.toLocaleString('it')} km` } }
+      },
+      scales: {
+        y: {
+          ticks: {
+            callback: v => `${v.toLocaleString('it')}`,
+            font: { family:'Barlow Condensed', size:11 }
+          },
+          grid: { color:'#F0F0F0' }
+        },
+        x: {
+          ticks: { font:{ family:'Barlow Condensed', size:11 } },
+          grid:  { display:false }
+        }
+      }
+    }
+  });
+}
+
+/* ============================================================
+   RENDER — STATS
+   ============================================================ */
+function renderStats() {
+  const total = logEntries.reduce((s, e) => s + parseFloat(e.costo||0), 0);
+  const count = logEntries.length;
+  document.getElementById('s-total').textContent = `€${total.toFixed(2)}`;
+  document.getElementById('s-count').textContent = count;
+  document.getElementById('s-avg').textContent   = count ? `€${Math.round(total/count)}` : '€0';
+}
+
+/* ============================================================
+   UTILS
+   ============================================================ */
+function startClock() {
+  const tick = () => {
+    const n = new Date();
+    const t = n.toLocaleTimeString('it', { hour:'2-digit', minute:'2-digit' });
+    const d = n.toLocaleDateString('it', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+    document.getElementById('clock').textContent =
+      `${t} · ${d.charAt(0).toUpperCase() + d.slice(1)}`;
+  };
+  tick(); setInterval(tick, 1000);
+}
+
+function setTodayOnNewRow() {
+  const el = document.getElementById('nr-data');
+  if (el) el.value = new Date().toISOString().split('T')[0];
+}
+
+function clearNewRow() {
+  ['nr-km','nr-desc','nr-costo'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.value = '';
+  });
+  const mecc = document.getElementById('nr-mecc');
+  if (mecc) mecc.checked = false;
+  setTodayOnNewRow();
+}
+
+function fmtDate(s) {
+  if (!s) return '—';
+  const d = new Date(s + 'T00:00:00');
+  return d.toLocaleDateString('it', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+function esc(s) {
+  return (s||'')
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;');
+}
+
+function toast(msg, type='ok') {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className   = `toast ${type} show`;
+  setTimeout(() => el.classList.remove('show'), 3000);
+}
+
+/* ── Avvio ── */
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>
