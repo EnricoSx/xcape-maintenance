@@ -3,996 +3,812 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>X-Cape 650 — Maintenance Manager</title>
-  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;600;700;800&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
+  <title>X-Cape 650 — Maintenance</title>
+  <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@3.0.1/dist/chartjs-plugin-annotation.min.js"></script>
   <style>
-    :root {
-      --red:       #C8102E;
-      --red-dark:  #A00D24;
-      --dark:      #111111;
-      --surface:   #FFFFFF;
-      --surface2:  #F4F4F4;
-      --border:    #E2E2E2;
-      --text:      #1A1A1A;
-      --muted:     #777777;
-      --yellow:    #FFB800;
-      --green:     #00A651;
-      --orange:    #E65C00;
+    :root{
+      --red:#C8102E;--red-dk:#9E0B22;--gold:#8B7136;
+      --dark:#111;--bg:#E8E8E8;--surface:#FFF;
+      --surface2:#F5F5F5;--border:#DDD;--text:#1A1A1A;
+      --muted:#888;--green:#1B8A4B;--yellow:#E8A000;
+      --done-bg:#F0F0F0;--done-text:#B0B0B0;
     }
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-    body {
-      font-family: 'Barlow', sans-serif;
-      background: var(--surface2);
-      color: var(--text);
-      min-height: 100vh;
-    }
-
-    /* ── CONFIG BANNER ── */
-    #config-banner {
-      display: none;
-      background: var(--yellow);
-      color: #111;
-      text-align: center;
-      padding: 10px 20px;
-      font-family: 'Barlow Condensed', sans-serif;
-      font-size: 0.95rem;
-      font-weight: 700;
-      letter-spacing: 0.03em;
-    }
-    #config-banner a { color: var(--red); }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
 
     /* ── HEADER ── */
-    header {
-      background: var(--dark);
-      color: white;
-      display: grid;
-      grid-template-columns: 300px 1fr 160px 160px;
-      min-height: 160px;
-      overflow: hidden;
-    }
+    .hd-line{height:3px;background:linear-gradient(to right,transparent,var(--gold) 12%,var(--gold) 88%,transparent)}
+    header{background:var(--red);height:46px;display:flex;align-items:center;padding:0 18px;gap:12px}
+    .hd-xcape{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:800;font-size:1.45rem;color:white;letter-spacing:.02em;flex-shrink:0}
+    .hd-sep{width:1px;height:18px;background:rgba(255,255,255,.28);flex-shrink:0}
+    .hd-clock{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.72);letter-spacing:.05em;flex-shrink:0}
+    .hd-spacer{flex:1}
+    .hd-mm img{height:30px;display:block}
+    .hd-mm-fb{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.18em;text-transform:uppercase}
 
-    .hd-brand {
-      background: var(--red);
-      padding: 20px 24px;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-    .hd-brand .sub  { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; opacity:.85; }
-    .hd-brand h1    { font-family:'Barlow Condensed',sans-serif; font-size:2.5rem; font-weight:800; line-height:1; margin:.2rem 0; }
-    .hd-brand .mgr  { font-family:'Barlow Condensed',sans-serif; font-size:.75rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; opacity:.7; }
-    .hd-brand .clock{ font-family:'Barlow Condensed',sans-serif; font-size:.9rem; font-weight:600; opacity:.9; margin-top:10px; }
+    /* ── KM BAR ── */
+    .km-bar{background:var(--dark);display:flex;align-items:center;padding:7px 18px;gap:14px;flex-wrap:wrap}
+    .km-stat{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
+    .km-stat .lbl{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:1px;white-space:nowrap}
+    .km-stat .val{font-family:'Barlow Condensed',sans-serif;font-size:1.45rem;font-weight:800;color:white;line-height:1}
+    .km-stat .val.warn{color:var(--yellow)}.km-stat .val.danger{color:var(--red)}.km-stat .val.ok{color:var(--green)}.km-stat .val.neutral{color:#777}
+    .km-input-wrap{display:flex;align-items:center;gap:8px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;padding:0 10px;height:36px}
+    .km-input-wrap label{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3E3E3E;white-space:nowrap}
+    .km-input-wrap input{width:96px;background:transparent;border:none;outline:none;font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:white;padding:0}
+    .km-input-wrap input::placeholder{color:#2E2E2E}
+    .km-input-wrap .km-hint{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;color:#2E2E2E;white-space:nowrap}
+    .bar-sep{width:1px;height:22px;background:#2A2A2A;flex-shrink:0}
 
-    .hd-bike {
-      display: flex;
-      align-items: flex-end;
-      justify-content: center;
-      overflow: hidden;
-      background: linear-gradient(to right, var(--dark), #1a1a1a);
-    }
-    .hd-bike img { height: 160px; object-fit: cover; filter: drop-shadow(0 0 24px rgba(200,16,46,.35)); }
-    .hd-bike .placeholder {
-      color: #333;
-      font-family:'Barlow Condensed',sans-serif;
-      font-size:.7rem; letter-spacing:.1em; text-transform:uppercase;
-      text-align:center; padding:20px;
-    }
-
-    .hd-stat {
-      background: #161616;
-      border-left: 1px solid #2a2a2a;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; padding: 20px;
-    }
-    .hd-stat .lbl { font-family:'Barlow Condensed',sans-serif; font-size:.65rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:#666; margin-bottom:8px; }
-    .hd-stat .val { font-family:'Barlow Condensed',sans-serif; font-size:2.8rem; font-weight:800; line-height:1; color:white; }
-    .hd-stat .val.warn   { color: var(--yellow); }
-    .hd-stat .val.danger { color: var(--red);    }
-
-    /* ── MAIN LAYOUT ── */
-    main {
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 24px 20px;
-      display: grid;
-      grid-template-columns: 340px 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-    .sidebar { display:flex; flex-direction:column; gap:20px; }
-    .content { display:flex; flex-direction:column; gap:20px; }
+    /* ── MAIN GRID ── */
+    main{display:grid;grid-template-columns:1fr 230px;gap:12px;padding:12px 12px 0;max-width:1440px;margin:0 auto;align-items:start}
+    .main-left{display:flex;flex-direction:column;gap:12px}
+    .main-right{display:flex;flex-direction:column;gap:12px}
+    .chart-row{padding:0 12px 12px;max-width:1440px;margin:0 auto;width:100%}
 
     /* ── CARDS ── */
-    .card {
-      background: var(--surface);
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,.07);
-      overflow: hidden;
-    }
-    .card-head {
-      padding: 14px 20px;
-      border-bottom: 1px solid var(--border);
-      display: flex; align-items: center; gap: 8px;
-    }
-    .card-head h2 { font-family:'Barlow Condensed',sans-serif; font-size:.78rem; font-weight:700; letter-spacing:.18em; text-transform:uppercase; color:var(--muted); }
-    .card-body { padding: 20px; }
+    .card{background:var(--surface);border-radius:5px;box-shadow:0 1px 5px rgba(0,0,0,.08);overflow:hidden}
+    .ch{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface2)}
+    .ch h2{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+    .ch-actions{display:flex;align-items:center;gap:7px}
+    .cb{padding:12px}
 
-    /* ── INPUT KM ── */
-    .km-row { display:flex; gap:10px; }
-    .km-row input {
-      flex:1; padding:12px 16px;
-      border:2px solid var(--border); border-radius:6px;
-      font-family:'Barlow Condensed',sans-serif; font-size:1.5rem; font-weight:700;
-      color:var(--text); outline:none; transition:border-color .2s;
-    }
-    .km-row input:focus { border-color:var(--red); }
+    /* ── TABLES ── */
+    .tbl-wrap{overflow-x:auto}
+    table.st,table.pt{width:100%;border-collapse:collapse;font-size:.8rem}
+    table.st th,table.pt th{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:6px 9px;border-bottom:2px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap}
+    table.st td,table.pt td{padding:6px 9px;border-bottom:1px solid var(--border);vertical-align:middle}
+    table.st tr:last-child td,table.pt tr:last-child td{border-bottom:none}
+    table.st tr.done-row td{background:var(--done-bg);color:var(--done-text)}
+    table.st tr.sub-row-edit td{background:#FFF8F8;padding:10px 14px;border-bottom:2px solid var(--red)}
+    table.pt tr.over-row td{background:#FFF5F5}
+    table.st input[type=number],table.st input[type=text],table.st input[type=date],table.st textarea,
+    table.pt input[type=number],table.pt input[type=date],table.pt textarea{
+      width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:3px;
+      font-family:'Barlow',sans-serif;font-size:.8rem;outline:none;background:white;resize:vertical;transition:border-color .15s}
+    table.st input:focus,table.st textarea:focus{border-color:var(--red)}
+    table.pt input:focus,table.pt textarea:focus{border-color:var(--green)}
+    table.st input[type=checkbox]{width:14px;height:14px;accent-color:var(--red);cursor:pointer}
+    .km-tag{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.95rem;color:var(--dark)}
+    .mile-lbl{font-weight:600;font-size:.8rem}
+    .mile-ops{font-size:.7rem;color:var(--muted);font-style:italic;margin-top:1px}
+
+    /* ── STATUS BADGES ── */
+    .sb{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 5px;border-radius:3px;white-space:nowrap}
+    .s-done{background:#E8F5E9;color:var(--green)}.s-over{background:#FFEBEE;color:var(--red)}
+    .s-near{background:#FFF8E1;color:var(--yellow)}.s-future{background:var(--surface2);color:var(--muted)}
 
     /* ── BUTTONS ── */
-    .btn {
-      border:none; border-radius:6px; cursor:pointer;
-      font-family:'Barlow Condensed',sans-serif; font-weight:700;
-      letter-spacing:.08em; text-transform:uppercase;
-      transition:background .15s, transform .1s; white-space:nowrap;
-    }
-    .btn:active { transform:scale(.97); }
-    .btn-red  { background:var(--red);    color:white;         padding:12px 20px; font-size:1rem; }
-    .btn-red:hover { background:var(--red-dark); }
-    .btn-sm   { padding:5px 10px; font-size:.78rem; }
-    .btn-ghost { background:var(--surface2); color:var(--muted); }
-    .btn-ghost:hover { background:var(--border); }
-    .btn-edit  { background:#E3F2FD; color:#1565C0; }
-    .btn-edit:hover { background:#BBDEFB; }
-    .btn-del   { background:#FFEBEE; color:var(--red); }
-    .btn-del:hover { background:#FFCDD2; }
-    .btn-ok    { background:var(--green); color:white; }
-    .btn-ok:hover { background:#008040; }
+    .btn{border:none;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:background .12s,transform .08s;white-space:nowrap}
+    .btn:active{transform:scale(.96)}
+    .btn-xs{padding:3px 7px;font-size:.65rem}.btn-sm{padding:5px 10px;font-size:.72rem}
+    .btn-red{background:var(--red);color:white}.btn-red:hover{background:var(--red-dk)}
+    .btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:var(--border)}
+    .btn-green{background:var(--green);color:white}.btn-green:hover{background:#136B38}
+    .btn-edit{background:#E3F2FD;color:#1565C0}.btn-edit:hover{background:#BBDEFB}
+    .btn-circ{background:var(--red);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;padding:0;flex-shrink:0}
 
-    /* ── NEXT SERVICE ── */
-    .card.next-card { border-left:4px solid var(--red); }
-    .ns-km    { font-family:'Barlow Condensed',sans-serif; font-size:2rem; font-weight:800; color:var(--red); }
-    .ns-label { font-family:'Barlow Condensed',sans-serif; font-size:.82rem; font-weight:700; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); margin:4px 0 12px; }
-    .ns-list  { list-style:none; }
-    .ns-list li {
-      display:flex; align-items:flex-start; gap:6px;
-      padding:5px 0; font-size:.875rem;
-      border-bottom:1px solid var(--border);
-    }
-    .ns-list li:last-child { border-bottom:none; }
+    /* ── POST-ITS ── */
+    .pc{padding:10px;display:flex;flex-direction:column;gap:8px}
+    .postit{border-radius:2px;padding:9px 10px;box-shadow:2px 3px 8px rgba(0,0,0,.13)}
+    .postit-text{width:100%;background:transparent;border:none;outline:none;font-family:'Barlow',sans-serif;font-size:.8rem;color:#333;resize:none;min-height:54px;line-height:1.45}
+    .pf{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
+    .cdots{display:flex;gap:4px}
+    .cdot{width:10px;height:10px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s}
+    .cdot:hover{transform:scale(1.2)}.cdot.active{border-color:rgba(0,0,0,.5)}
+    .pdel{background:none;border:none;cursor:pointer;color:rgba(0,0,0,.22);font-size:.82rem;padding:2px 4px;border-radius:2px;transition:color .12s,background .12s}
+    .pdel:hover{color:var(--red);background:rgba(200,16,46,.08)}
+    .pe-empty{text-align:center;color:var(--muted);font-size:.72rem;font-style:italic;padding:16px}
 
-    /* ── BADGES ── */
-    .badge {
-      font-family:'Barlow Condensed',sans-serif; font-size:.6rem; font-weight:700;
-      letter-spacing:.08em; text-transform:uppercase;
-      padding:2px 6px; border-radius:3px; white-space:nowrap; margin-top:1px;
-    }
-    .badge-m  { background:var(--red);    color:white; }
-    .badge-d  { background:#E8F5E9; color:#2E7D32; }
+    /* ── EDIT GRID ── */
+    .eg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;align-items:end}
+    .ef label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:.56rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+    .ef.full{grid-column:1/-1}
+    .ef-actions{grid-column:1/-1;display:flex;gap:7px;justify-content:flex-end;margin-top:4px}
 
-    /* ── STATS BOX ── */
-    .total-cost { font-family:'Barlow Condensed',sans-serif; font-size:3rem; font-weight:800; color:var(--red); text-align:center; padding:16px 0 4px; line-height:1; }
-    .total-lbl  { font-family:'Barlow Condensed',sans-serif; font-size:.68rem; font-weight:700; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); text-align:center; margin-bottom:14px; }
-    .sg { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
-    .si { background:var(--surface2); border-radius:6px; padding:14px; text-align:center; }
-    .si-val { font-family:'Barlow Condensed',sans-serif; font-size:1.9rem; font-weight:800; color:var(--red); line-height:1; }
-    .si-lbl { font-family:'Barlow Condensed',sans-serif; font-size:.65rem; font-weight:700; letter-spacing:.15em; text-transform:uppercase; color:var(--muted); margin-top:4px; }
+    /* ── CHART FILTERS ── */
+    .cf-btn{font-family:'Barlow Condensed',sans-serif;font-size:.63rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .12s}
+    .cf-btn:hover{background:var(--border)}.cf-btn.active{background:var(--red);color:white;border-color:var(--red)}
+    .cf-sep{color:#CCC;margin:0 1px;font-size:.8rem}
 
-    /* ── LOG TABLE ── */
-    .tbl-wrap { overflow-x:auto; }
-    table.log {
-      width:100%; border-collapse:collapse; font-size:.875rem;
-    }
-    table.log th {
-      font-family:'Barlow Condensed',sans-serif; font-size:.68rem; font-weight:700;
-      letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
-      padding:10px 12px; text-align:left;
-      border-bottom:2px solid var(--border); background:var(--surface2);
-      white-space:nowrap;
-    }
-    table.log td {
-      padding:8px 12px; border-bottom:1px solid var(--border); vertical-align:middle;
-    }
-    table.log tr.new-row td { background:#FFF7F7; }
-    table.log tr:last-child td { border-bottom:none; }
-
-    table.log input[type=date],
-    table.log input[type=number],
-    table.log input[type=text],
-    table.log textarea {
-      width:100%; padding:6px 8px;
-      border:1px solid var(--border); border-radius:4px;
-      font-family:'Barlow',sans-serif; font-size:.875rem; color:var(--text);
-      background:white; outline:none; transition:border-color .2s;
-      resize:vertical;
-    }
-    table.log input:focus,
-    table.log textarea:focus { border-color:var(--red); }
-    table.log input[type=checkbox] { width:16px; height:16px; accent-color:var(--red); cursor:pointer; }
-    .act-col { display:flex; flex-direction:column; gap:4px; }
-
-    /* ── SCHEDULE TABLE ── */
-    table.sched {
-      width:100%; border-collapse:collapse; font-size:.875rem;
-    }
-    table.sched th {
-      font-family:'Barlow Condensed',sans-serif; font-size:.68rem; font-weight:700;
-      letter-spacing:.15em; text-transform:uppercase; color:var(--muted);
-      padding:10px 12px; text-align:left;
-      border-bottom:2px solid var(--border); background:var(--surface2);
-    }
-    table.sched td { padding:10px 12px; border-bottom:1px solid var(--border); vertical-align:middle; }
-    table.sched tr:last-child td { border-bottom:none; }
-    .km-tag { font-family:'Barlow Condensed',sans-serif; font-size:1.05rem; font-weight:800; }
-    .s-done   { color:var(--green);  font-weight:700; font-family:'Barlow Condensed',sans-serif; }
-    .s-near   { color:var(--yellow); font-weight:700; font-family:'Barlow Condensed',sans-serif; }
-    .s-over   { color:var(--red);    font-weight:700; font-family:'Barlow Condensed',sans-serif; }
-    .s-future { color:var(--muted);  font-family:'Barlow Condensed',sans-serif; }
+    /* ── MODAL ── */
+    .modal-ov{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;animation:fi .18s ease}
+    @keyframes fi{from{opacity:0}to{opacity:1}}
+    .modal-box{background:var(--surface);border-radius:7px;max-width:480px;width:92%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:su .2s ease}
+    @keyframes su{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
+    .modal-h{background:var(--red);color:white;padding:13px 18px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .modal-b{padding:16px;max-height:60vh;overflow-y:auto}
+    .m-sec{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);margin:12px 0 7px}
+    .m-sec:first-child{margin-top:0}
+    .m-item{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:4px;margin-bottom:5px;border-left:3px solid}
+    .m-item.ov{background:#FFEBEE;border-color:var(--red)}.m-item.wa{background:#FFF8E1;border-color:var(--yellow)}
+    .m-item .mi{font-size:.9rem;flex-shrink:0;margin-top:1px}
+    .m-item .mt{font-weight:600;font-size:.82rem}.m-item .ms{font-size:.7rem;color:var(--muted);margin-top:2px}
+    .modal-f{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 
     /* ── TOAST ── */
-    .toast {
-      position:fixed; bottom:24px; right:24px; z-index:9999;
-      background:var(--dark); color:white;
-      padding:11px 18px; border-radius:6px;
-      font-family:'Barlow Condensed',sans-serif; font-size:.95rem; font-weight:600;
-      opacity:0; transform:translateY(8px); pointer-events:none;
-      transition:all .25s ease;
-    }
-    .toast.show { opacity:1; transform:translateY(0); }
-    .toast.ok  { border-left:4px solid var(--green); }
-    .toast.err { border-left:4px solid var(--red);   }
+    .toast{position:fixed;bottom:16px;right:16px;z-index:9999;background:var(--dark);color:white;padding:8px 14px;border-radius:4px;font-family:'Barlow Condensed',sans-serif;font-size:.85rem;font-weight:600;opacity:0;transform:translateY(6px);pointer-events:none;transition:all .2s ease}
+    .toast.show{opacity:1;transform:translateY(0)}
+    .toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
 
-    /* ── LOADING ── */
-    .loading {
-      text-align:center; padding:30px;
-      color:var(--muted); font-family:'Barlow Condensed',sans-serif;
-      font-size:.9rem; letter-spacing:.1em; text-transform:uppercase;
-    }
+    #cfg-banner{display:none;background:#FFF3CD;color:#856404;padding:5px 18px;font-size:.72rem;text-align:center}
 
-    /* ── RESPONSIVE ── */
-    @media(max-width:960px) {
-      main { grid-template-columns:1fr; }
-      header { grid-template-columns:1fr 1fr; grid-template-rows:auto auto; }
-      .hd-bike { display:none; }
-    }
-    @media(max-width:560px) {
-      header { grid-template-columns:1fr; }
-      .hd-stat { flex-direction:row; justify-content:space-between; padding:14px 20px; }
-      .hd-stat .val { font-size:2rem; }
-      table.log { font-size:.8rem; }
-    }
+    @media(max-width:860px){main{grid-template-columns:1fr}.km-bar{gap:10px}}
   </style>
 </head>
 <body>
 
-<div id="config-banner">
-  ⚠️ Supabase non configurato — i dati vengono salvati solo su questo browser.
-  Apri il file e imposta <strong>SUPABASE_URL</strong> e <strong>SUPABASE_ANON_KEY</strong> per la sincronizzazione multi-device.
-</div>
+<!--
+  ══ SQL da eseguire su Supabase (aggiuntivo a km_log e maintenance_log) ══
 
+  CREATE TABLE schedule_done (
+    id BIGSERIAL PRIMARY KEY, target_km INTEGER UNIQUE NOT NULL,
+    km_done INTEGER, costo NUMERIC(10,2) DEFAULT 0, note TEXT,
+    eseguito BOOLEAN DEFAULT FALSE, done_date DATE,
+    updated_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE TABLE periodic_state (
+    id BIGSERIAL PRIMARY KEY, type_key TEXT UNIQUE NOT NULL,
+    last_km INTEGER DEFAULT 0, last_date DATE,
+    costo NUMERIC(10,2) DEFAULT 0, note TEXT
+  );
+  CREATE TABLE sticky_notes (
+    id BIGSERIAL PRIMARY KEY, txt TEXT DEFAULT '',
+    color TEXT DEFAULT '#FFF9C4', created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  ALTER TABLE schedule_done  ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE periodic_state ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE sticky_notes   ENABLE ROW LEVEL SECURITY;
+  CREATE POLICY "open" ON schedule_done  FOR ALL USING (true) WITH CHECK (true);
+  CREATE POLICY "open" ON periodic_state FOR ALL USING (true) WITH CHECK (true);
+  CREATE POLICY "open" ON sticky_notes   FOR ALL USING (true) WITH CHECK (true);
+-->
+
+<div id="cfg-banner">⚠️ Supabase non configurato — dati solo su questo browser. Imposta SUPABASE_URL e SUPABASE_ANON_KEY.</div>
+
+<div class="hd-line"></div>
 <header>
-  <!-- Brand -->
-  <div class="hd-brand">
-    <div>
-      <div class="sub">Moto Morini</div>
-      <h1>X&#8209;CAPE 650</h1>
-      <div class="mgr">Maintenance Manager</div>
-    </div>
-    <div class="clock" id="clock"></div>
-  </div>
-
-  <!-- Bike image — metti qui il tuo file bike.png -->
-  <div class="hd-bike">
-    <img src="bike.png" alt="X-Cape 650"
-         onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-    <div class="placeholder" style="display:none">
-      Inserisci <strong>bike.png</strong><br>nella stessa cartella
-    </div>
-  </div>
-
-  <!-- KM Attuali -->
-  <div class="hd-stat">
-    <div class="lbl">KM Attuali</div>
-    <div class="val" id="hd-km">—</div>
-  </div>
-
-  <!-- Al Tagliando -->
-  <div class="hd-stat">
-    <div class="lbl">Al Tagliando</div>
-    <div class="val warn" id="hd-tag">—</div>
+  <div class="hd-xcape">✕—CAPE 650</div>
+  <div class="hd-sep"></div>
+  <div class="hd-clock" id="clock">—</div>
+  <div class="hd-spacer"></div>
+  <div class="hd-mm">
+    <img src="mm-logo.png" alt="MM"
+         onerror="this.style.display='none';document.getElementById('mm-fb').style.display='block'">
+    <span class="hd-mm-fb" id="mm-fb" style="display:none">MOTO MORINI</span>
   </div>
 </header>
 
-<main>
-  <!-- ── SIDEBAR ── -->
-  <div class="sidebar">
+<div class="km-bar">
+  <div class="km-stat">
+    <div class="lbl">KM Attuali</div>
+    <div class="val" id="hd-km">—</div>
+  </div>
+  <div class="bar-sep"></div>
+  <div class="km-stat">
+    <div class="lbl">Dall'Ultima Reg.</div>
+    <div class="val neutral" id="hd-delta">—</div>
+  </div>
+  <div class="bar-sep"></div>
+  <div class="km-input-wrap">
+    <label>Nuovo KM</label>
+    <input type="number" id="km-in" placeholder="0" min="0" step="1"
+           onkeydown="if(event.key==='Enter'){saveKm();this.blur()}">
+    <span class="km-hint">↵ invio</span>
+  </div>
+  <div class="bar-sep"></div>
+  <div class="km-stat">
+    <div class="lbl">Al Prossimo Servizio</div>
+    <div class="val ok" id="hd-next">—</div>
+  </div>
+</div>
 
-    <!-- Input KM -->
+<main>
+  <div class="main-left">
+
+    <!-- CONTROLLI PERIODICI — sopra scadenziario -->
     <div class="card">
-      <div class="card-head"><span>🔢</span><h2>Aggiorna Chilometri</h2></div>
-      <div class="card-body">
-        <div class="km-row">
-          <input type="number" id="km-in" placeholder="0..." min="0" step="1"
-                 onkeydown="if(event.key==='Enter')saveKm()">
-          <button class="btn btn-red" onclick="saveKm()">OK</button>
-        </div>
+      <div class="ch"><h2>🔗 Controlli Periodici</h2></div>
+      <div class="tbl-wrap">
+        <table class="pt">
+          <thead><tr>
+            <th>Operazione</th>
+            <th style="width:72px">Ogni</th>
+            <th style="width:84px">Ultimo KM</th>
+            <th style="width:84px">Prossimo</th>
+            <th style="width:78px">Stato</th>
+            <th style="width:72px"></th>
+          </tr></thead>
+          <tbody id="periodic-body"></tbody>
+        </table>
       </div>
     </div>
 
-    <!-- Prossimo intervento -->
-    <div class="card next-card">
-      <div class="card-head"><span>🔧</span><h2 id="ns-title">Prossimo Intervento</h2></div>
-      <div class="card-body" id="ns-body"><div class="loading">Caricamento…</div></div>
-    </div>
-
-    <!-- Statistiche costi -->
+    <!-- SCADENZIARIO — ordine 1k→48k, solo prossimo visibile -->
     <div class="card">
-      <div class="card-body">
-        <div class="total-cost" id="s-total">€0.00</div>
-        <div class="total-lbl">Investimento Totale</div>
-        <div class="sg">
-          <div class="si"><div class="si-val" id="s-count">0</div><div class="si-lbl">Interventi</div></div>
-          <div class="si"><div class="si-val" id="s-avg">€0</div><div class="si-lbl">Media Costo</div></div>
+      <div class="ch">
+        <h2>📋 Scadenziario</h2>
+        <div class="ch-actions">
+          <button class="btn btn-ghost btn-xs" id="sched-toggle-btn" onclick="toggleAllMiles()">▼ Mostra tutti</button>
         </div>
+      </div>
+      <div class="tbl-wrap">
+        <table class="st">
+          <thead><tr>
+            <th style="width:74px">KM</th>
+            <th>Tagliando</th>
+            <th style="width:86px">KM Effettivi</th>
+            <th style="width:68px">Costo €</th>
+            <th style="width:42px;text-align:center" title="Eseguito">✓</th>
+            <th style="width:80px">Stato</th>
+            <th style="width:50px"></th>
+          </tr></thead>
+          <tbody id="sched-body"></tbody>
+        </table>
       </div>
     </div>
 
   </div>
 
-  <!-- ── CONTENT ── -->
-  <div class="content">
-
-    <!-- Registro Interventi -->
+  <div class="main-right">
     <div class="card">
-      <div class="card-head"><span>🔩</span><h2>Registro Interventi</h2></div>
-      <div class="tbl-wrap">
-        <table class="log">
-          <thead>
-            <tr>
-              <th style="width:120px">Data</th>
-              <th style="width:90px">KM</th>
-              <th>Descrizione</th>
-              <th style="width:100px">Costo (€)</th>
-              <th style="width:54px;text-align:center">Mecc.</th>
-              <th style="width:88px">Azioni</th>
-            </tr>
-          </thead>
-          <tbody id="log-body">
-            <!-- new-row inserted by JS -->
-          </tbody>
-        </table>
+      <div class="ch">
+        <h2>📌 Note</h2>
+        <button class="btn-circ btn" onclick="addNote()">+</button>
+      </div>
+      <div class="pc" id="notes-container">
+        <div class="pe-empty" id="notes-empty">Premi + per aggiungere una nota</div>
       </div>
     </div>
-
-    <!-- Scadenziario -->
-    <div class="card">
-      <div class="card-head"><span>📋</span><h2>Scadenziario Completo</h2></div>
-      <div class="tbl-wrap">
-        <table class="sched">
-          <thead>
-            <tr>
-              <th style="width:90px">Km</th>
-              <th style="width:200px">Tagliando</th>
-              <th>Operazioni principali</th>
-              <th style="width:130px">Stato</th>
-            </tr>
-          </thead>
-          <tbody id="sched-body"><tr><td colspan="4" class="loading">Caricamento…</td></tr></tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- Trend chilometrico -->
-    <div class="card">
-      <div class="card-head"><span>📈</span><h2>Trend Chilometrico</h2></div>
-      <div class="card-body">
-        <canvas id="km-chart" height="110"></canvas>
-        <div id="chart-empty" class="loading" style="display:none">
-          Inserisci almeno due rilevazioni per visualizzare il grafico
-        </div>
-      </div>
-    </div>
-
   </div>
 </main>
+
+<!-- GRAFICO — full width -->
+<div class="chart-row">
+  <div class="card" style="margin-top:12px">
+    <div class="ch">
+      <h2>📈 Trend Chilometrico</h2>
+      <div class="ch-actions" id="chart-filters" style="flex-wrap:wrap;gap:5px"></div>
+    </div>
+    <div class="cb" style="padding:10px 14px 14px">
+      <canvas id="km-chart" height="70"></canvas>
+      <div id="chart-msg" style="display:none;text-align:center;color:var(--muted);font-size:.72rem;font-style:italic;padding:16px">
+        Serve almeno 2 rilevazioni per visualizzare il grafico
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL -->
+<div class="modal-ov" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
+  <div class="modal-box">
+    <div class="modal-h">🔔 Interventi Richiesti</div>
+    <div class="modal-b" id="modal-body"></div>
+    <div class="modal-f">
+      <button class="btn btn-ghost btn-sm" onclick="closeModal()">Chiudi</button>
+      <button class="btn btn-red btn-sm" onclick="closeModal()">✓ Ho Capito</button>
+    </div>
+  </div>
+</div>
 
 <div class="toast" id="toast"></div>
 
 <script>
-/* ============================================================
-   CONFIGURAZIONE — sostituisci con i tuoi valori Supabase
-   ============================================================ */
-const SUPABASE_URL      = '';
-const SUPABASE_ANON_KEY = '';
+/* ════════════════════════════════
+   CONFIG
+════════════════════════════════ */
+const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
+const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
-/* ============================================================
-   PIANO DI MANUTENZIONE — fonte: Manuale X-Cape 650 Ed.2 2022
-   meccanico: true  = officina consigliata
-   meccanico: false = operazione fai-da-te
-   ============================================================ */
-const BASE_ITEMS_6000 = [
-  { d:'Cambio olio motore',                             m:true  },
-  { d:'Sostituzione filtro olio',                       m:true  },
-  { d:'Pulizia filtro aria',                            m:true  },
-  { d:'Lubrificazione e tensione catena trasmissione',  m:false },
-  { d:'Controllo regime minimo',                        m:true  },
-  { d:'Controllo sistema acceleratore',                 m:true  },
-  { d:'Controllo funzionamento frizione',               m:true  },
-  { d:'Controllo pressione pneumatici',                 m:false },
-  { d:'Controllo volume e perdite refrigerante',        m:false },
-  { d:'Controllo perdita e volume liquido freni',       m:false },
-  { d:'Controllo efficienza e interruttore freni',      m:false },
-  { d:'Verifica coppia bulloni e dadi',                 m:true  },
-];
-
+/* ════════════════════════════════
+   DATI FISSI — Manuale Ed.2 2022
+════════════════════════════════ */
 const MILESTONES = [
-  {
-    km: 1000,
-    label: '1° Tagliando (Rodaggio)',
-    items: [
-      { d:'Cambio olio motore — primo riempimento',       m:true  },
-      { d:'Sostituzione filtro olio',                     m:true  },
-      { d:'Lubrificazione e tensione catena trasmissione',m:false },
-      { d:'Controllo sistema acceleratore',               m:true  },
-      { d:'Controllo perdita carburante e tubazioni',     m:false },
-      { d:'Controllo volume e perdite refrigerante',      m:false },
-      { d:'Controllo danni radiatore e tubazioni',        m:false },
-      { d:'Controllo perdita e volume liquido freni',     m:false },
-      { d:'Controllo efficienza freni',                   m:false },
-      { d:'Controllo gioco sterzo',                       m:true  },
-      { d:'Verifica coppia bulloni e dadi',               m:true  },
-    ]
-  },
-  {
-    km: 6000,
-    label: 'Tagliando 6.000 km',
-    items: BASE_ITEMS_6000
-  },
-  {
-    km: 12000,
-    label: 'Tagliando 12.000 km',
-    items: [
-      { d:'Cambio olio motore',                               m:true  },
-      { d:'Sostituzione filtro olio',                         m:true  },
-      { d:'Sostituzione filtro aria',                         m:true  },
-      { d:'Sostituzione candela',                             m:true  },
-      { d:'Verifica usura catena e protezione catena',        m:true  },
-      { d:'Ispezione usura pastiglie freni',                  m:true  },
-      { d:'Controllo forcella ant. / ammortizzatore post.',   m:true  },
-      { d:'Controllo perdita olio idraulico forcella',        m:true  },
-      { d:'Controllo pressione e usura pneumatici',           m:false },
-      { d:'Controllo danni cuscinetti cerchi',                m:true  },
-      { d:'Pulizia corpo valvola a farfalla',                 m:true  },
-      { d:'Controllo danni sistema aspirazione',              m:true  },
-      { d:'Controllo gioco sterzo',                           m:true  },
-      { d:'Controllo volume e perdite refrigerante',          m:false },
-      { d:'Controllo sistema elettrico (luci, interruttori)', m:true  },
-      { d:'Verifica coppia bulloni e dadi',                   m:true  },
-    ]
-  },
-  {
-    km: 18000,
-    label: 'Tagliando 18.000 km',
-    items: BASE_ITEMS_6000
-  },
-  {
-    km: 24000,
-    label: 'Tagliando 24.000 km',
-    items: [
-      { d:'Cambio olio motore',                              m:true  },
-      { d:'Sostituzione filtro olio',                        m:true  },
-      { d:'Sostituzione filtro aria',                        m:true  },
-      { d:'Sostituzione candela',                            m:true  },
-      { d:'Sostituzione liquido freni (ant./post.)',         m:true  },
-      { d:'Verifica usura catena e protezione catena',       m:true  },
-      { d:'Ispezione usura pastiglie freni',                 m:true  },
-      { d:'Controllo forcella ant. / ammortizzatore post.',  m:true  },
-      { d:'Controllo gioco sterzo',                          m:true  },
-      { d:'Controllo pressione e usura pneumatici',          m:false },
-      { d:'Verifica coppia bulloni e dadi',                  m:true  },
-    ]
-  },
-  {
-    km: 30000,
-    label: 'Tagliando 30.000 km',
-    items: BASE_ITEMS_6000
-  },
-  {
-    km: 36000,
-    label: 'Tagliando 36.000 km',
-    items: [
-      { d:'Cambio olio motore',                              m:true  },
-      { d:'Sostituzione filtro olio',                        m:true  },
-      { d:'Sostituzione filtro aria',                        m:true  },
-      { d:'Sostituzione candela',                            m:true  },
-      { d:'Sostituzione refrigerante',                       m:true  },
-      { d:'Sostituzione radiatore e tubazioni',              m:true  },
-      { d:'Sostituzione liquido freni (ant./post.)',         m:true  },
-      { d:'Verifica usura catena e pignone',                 m:true  },
-      { d:'Ispezione usura pastiglie freni',                 m:true  },
-      { d:'Controllo forcella ant. / ammortizzatore post.',  m:true  },
-      { d:'Lubrificazione cuscinetto sterzo',                m:true  },
-      { d:'Controllo pressione e usura pneumatici',          m:false },
-      { d:'Verifica coppia bulloni e dadi',                  m:true  },
-    ]
-  },
-  {
-    km: 42000,
-    label: 'Tagliando 42.000 km',
-    items: [
-      { d:'Cambio olio motore',                              m:true  },
-      { d:'Sostituzione filtro olio',                        m:true  },
-      { d:'Pulizia filtro aria',                             m:true  },
-      { d:'Controllo e regolazione giochi valvole',          m:true  },
-      { d:'Lubrificazione e tensione catena trasmissione',   m:false },
-      { d:'Verifica coppia bulloni e dadi',                  m:true  },
-    ]
-  },
-  {
-    km: 48000,
-    label: 'Tagliando 48.000 km',
-    items: [
-      { d:'Cambio olio motore',                              m:true  },
-      { d:'Sostituzione filtro olio',                        m:true  },
-      { d:'Sostituzione filtro aria',                        m:true  },
-      { d:'Sostituzione candela',                            m:true  },
-      { d:'Sostituzione tubo del carburante',                m:true  },
-      { d:'Sostituzione tubo liquido freni',                 m:true  },
-      { d:'Sostituzione guarnizione pompa freni',            m:true  },
-      { d:'Sostituzione liquido freni (ant./post.)',         m:true  },
-      { d:'Verifica usura catena e pignone',                 m:true  },
-      { d:'Ispezione usura pastiglie freni',                 m:true  },
-      { d:'Controllo forcella ant. / ammortizzatore post.',  m:true  },
-      { d:'Lubrificazione cuscinetto sterzo',                m:true  },
-      { d:'Verifica coppia bulloni e dadi',                  m:true  },
-    ]
-  },
+  { km:1000,  label:'1° Tagliando (Rodaggio)',
+    ops:['Cambio olio motore','Filtro olio','Controllo acceleratore','Perdite carburante/refrigerante','Freni','Gioco sterzo','Serraggio bulloni'] },
+  { km:6000,  label:'Tagliando 6.000 km',
+    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Regime minimo','Frizione','Pressione pneumatici','Freni','Serraggio bulloni'] },
+  { km:12000, label:'Tagliando 12.000 km',
+    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Usura catena','Pastiglie freni','Forcella/ammortizzatore','Corpo farfalla','Elettrica','Serraggio bulloni'] },
+  { km:18000, label:'Tagliando 18.000 km',
+    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Regime minimo','Frizione','Pressione pneumatici','Freni','Serraggio bulloni'] },
+  { km:24000, label:'Tagliando 24.000 km',
+    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Liquido freni','Usura catena','Pastiglie freni','Gioco sterzo','Serraggio bulloni'] },
+  { km:30000, label:'Tagliando 30.000 km',
+    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Frizione','Pressione pneumatici','Freni','Serraggio bulloni'] },
+  { km:36000, label:'Tagliando 36.000 km',
+    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Sostituzione refrigerante','Sostituzione radiatore/tubazioni','Liquido freni','Cuscinetto sterzo','Serraggio bulloni'] },
+  { km:42000, label:'Tagliando 42.000 km',
+    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Regolazione giochi valvole','Serraggio bulloni'] },
+  { km:48000, label:'Tagliando 48.000 km',
+    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Sostituzione tubo carburante','Sostituzione tubo freni','Guarnizione pompa freni','Liquido freni','Cuscinetto sterzo','Serraggio bulloni'] },
 ];
 
-/* ============================================================
-   STATO APP
-   ============================================================ */
-let sb         = null;   // Supabase client (null = usa localStorage)
-let currentKm  = 0;
-let kmHistory  = [];     // [{ id, km, recorded_at }]
-let logEntries = [];     // [{ id, data, km, descrizione, costo, meccanico }]
-let editingId  = null;
-let kmChart    = null;
+const PERIODIC = [
+  { key:'catena_lub',  label:'Lubrificazione catena',          interval:600,  icon:'🔗' },
+  { key:'catena_tens', label:'Regolazione tensione catena',    interval:1000, icon:'⚙️' },
+  { key:'pneumatici',  label:'Controllo pressione pneumatici', interval:3000, icon:'🔵' },
+  { key:'pastiglie',   label:'Ispezione pastiglie freni',      interval:6000, icon:'🔴' },
+];
 
-/* ============================================================
+const NOTE_COLORS = ['#FFF9C4','#FCE4EC','#DCEDC8','#B3E5FC','#FFE0B2'];
+
+/* ════════════════════════════════
+   STATO
+════════════════════════════════ */
+let sb=null, currentKm=0;
+let kmHistory=[], schedDone={}, periodicSt={}, notes=[];
+let editMile=null, editPer=null, showAllMiles=false;
+let kmChart=null, chartFilter={type:'all',value:null};
+
+/* ════════════════════════════════
    INIT
-   ============================================================ */
+════════════════════════════════ */
 async function init() {
   startClock();
-  setTodayOnNewRow();
-
-  if (SUPABASE_URL === 'YOUR_SUPABASE_URL') {
-    document.getElementById('config-banner').style.display = 'block';
-    loadFromStorage();
-    return;
+  if(SUPABASE_URL==='YOUR_SUPABASE_URL'){
+    document.getElementById('cfg-banner').style.display='block';
+    loadLocal(); return;
   }
-
   try {
-    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-    await loadFromSupabase();
-  } catch (e) {
-    console.error(e);
-    toast('Errore Supabase, uso localStorage', 'err');
-    loadFromStorage();
-  }
+    sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+    await loadSB();
+  } catch(e){ console.error(e); toast('Errore Supabase → localStorage','err'); loadLocal(); }
 }
 
-/* ── localStorage ── */
-function loadFromStorage() {
-  kmHistory  = JSON.parse(localStorage.getItem('xcape_km')  || '[]');
-  logEntries = JSON.parse(localStorage.getItem('xcape_log') || '[]');
-  currentKm  = kmHistory.length ? kmHistory.at(-1).km : 0;
+function loadLocal(){
+  kmHistory  =JSON.parse(localStorage.getItem('xc_km')||'[]');
+  schedDone  =JSON.parse(localStorage.getItem('xc_sd')||'{}');
+  periodicSt =JSON.parse(localStorage.getItem('xc_ps')||'{}');
+  notes      =JSON.parse(localStorage.getItem('xc_nt')||'[]');
+  currentKm  =kmHistory.length?kmHistory.at(-1).km:0;
   render();
 }
-
-/* ── Supabase ── */
-async function loadFromSupabase() {
-  const [{ data: kd, error: ke }, { data: ld, error: le }] = await Promise.all([
-    sb.from('km_log').select('*').order('recorded_at', { ascending: true }),
-    sb.from('maintenance_log').select('*').order('data', { ascending: false }),
+async function loadSB(){
+  const [r1,r2,r3,r4]=await Promise.all([
+    sb.from('km_log').select('*').order('recorded_at',{ascending:true}),
+    sb.from('schedule_done').select('*'),
+    sb.from('periodic_state').select('*'),
+    sb.from('sticky_notes').select('*').order('created_at',{ascending:true}),
   ]);
-  if (ke) throw ke;
-  if (le) throw le;
-  kmHistory  = kd  || [];
-  logEntries = ld  || [];
-  currentKm  = kmHistory.length ? kmHistory.at(-1).km : 0;
+  [r1,r2,r3,r4].forEach(r=>{if(r.error)throw r.error});
+  kmHistory  =r1.data||[];
+  schedDone  =Object.fromEntries((r2.data||[]).map(r=>[r.target_km,r]));
+  periodicSt =Object.fromEntries((r3.data||[]).map(r=>[r.type_key,r]));
+  notes      =r4.data||[];
+  currentKm  =kmHistory.length?kmHistory.at(-1).km:0;
   render();
 }
-
-function render() {
-  updateHeader();
-  renderNextService();
-  renderSchedule();
-  renderLog();
-  renderChart();
-  renderStats();
+function saveLocal(){
+  localStorage.setItem('xc_km',JSON.stringify(kmHistory));
+  localStorage.setItem('xc_sd',JSON.stringify(schedDone));
+  localStorage.setItem('xc_ps',JSON.stringify(periodicSt));
+  localStorage.setItem('xc_nt',JSON.stringify(notes));
 }
+function render(){ updateHeader(); renderSchedule(); renderPeriodic(); renderNotes(); buildChartFilters(); renderChart(); }
 
-/* ============================================================
+/* ════════════════════════════════
    SAVE KM
-   ============================================================ */
-async function saveKm() {
-  const km = parseInt(document.getElementById('km-in').value);
-  if (!km || isNaN(km) || km < 0)  return toast('Inserisci km validi', 'err');
-  if (km < currentKm)              return toast(`Valore inferiore agli attuali ${currentKm.toLocaleString('it')} km`, 'err');
-
-  const entry = { km };
-
-  if (sb) {
-    const { data, error } = await sb.from('km_log').insert([entry]).select().single();
-    if (error) return toast('Errore salvataggio', 'err');
+════════════════════════════════ */
+async function saveKm(){
+  const v=parseInt(document.getElementById('km-in').value);
+  if(!v||isNaN(v)||v<=0) return toast('Km non validi','err');
+  if(v<currentKm) return toast(`Valore < attuali (${currentKm.toLocaleString('it')} km)`,'err');
+  if(sb){
+    const {data,error}=await sb.from('km_log').insert([{km:v}]).select().single();
+    if(error) return toast('Errore Supabase','err');
     kmHistory.push(data);
   } else {
-    const rec = { id: Date.now(), km, recorded_at: new Date().toISOString() };
-    kmHistory.push(rec);
-    localStorage.setItem('xcape_km', JSON.stringify(kmHistory));
+    kmHistory.push({id:Date.now(),km:v,recorded_at:new Date().toISOString()});
   }
+  currentKm=v;
+  document.getElementById('km-in').value='';
+  saveLocal(); render();
+  toast(`✅ ${v.toLocaleString('it')} km salvati`,'ok');
+  setTimeout(checkAlerts,400);
+}
 
-  currentKm = km;
-  document.getElementById('km-in').value = '';
-  document.getElementById('km-in').placeholder = `${km.toLocaleString('it')}…`;
+/* ════════════════════════════════
+   SCHEDULE CRUD
+════════════════════════════════ */
+async function saveMilestone(tkm){
+  const w=document.getElementById(`se-${tkm}`); if(!w) return;
+  const upd={target_km:tkm,
+    km_done:   parseInt(w.querySelector('.se-km').value)||null,
+    costo:     parseFloat(w.querySelector('.se-costo').value)||0,
+    note:      w.querySelector('.se-note').value.trim(),
+    eseguito:  w.querySelector('.se-done').checked,
+    done_date: w.querySelector('.se-date').value||null,
+    updated_at:new Date().toISOString()};
+  if(sb){
+    if(schedDone[tkm]?.id){const{error}=await sb.from('schedule_done').update(upd).eq('id',schedDone[tkm].id);if(error)return toast('Errore','err');}
+    else{const{data,error}=await sb.from('schedule_done').insert([upd]).select().single();if(error)return toast('Errore','err');upd.id=data.id;}
+  } else { upd.id=schedDone[tkm]?.id||Date.now(); }
+  schedDone[tkm]=upd; editMile=null;
+  saveLocal(); renderSchedule(); updateHeader(); toast('✅ Tagliando salvato','ok');
+}
+async function quickToggle(tkm,checked){
+  const ex=schedDone[tkm]||{};
+  const upd={...ex,target_km:tkm,eseguito:checked,
+    km_done:  checked&&!ex.km_done?currentKm:ex.km_done,
+    done_date:checked&&!ex.done_date?today():ex.done_date};
+  if(sb){
+    if(ex.id){await sb.from('schedule_done').update(upd).eq('id',ex.id);}
+    else{const{data}=await sb.from('schedule_done').insert([upd]).select().single();upd.id=data?.id;}
+  } else { upd.id=ex.id||Date.now(); }
+  schedDone[tkm]=upd; saveLocal(); renderSchedule(); updateHeader();
+}
+function toggleEditMile(km){ editMile=(editMile===km)?null:km; renderSchedule(); }
 
-  updateHeader();
-  renderNextService();
+/* ════════════════════════════════
+   PERIODIC CRUD
+════════════════════════════════ */
+async function savePeriodic(key){
+  const w=document.getElementById(`pe-${key}`); if(!w) return;
+  const upd={type_key:key,
+    last_km:  parseInt(w.querySelector('.pe-km').value)||currentKm,
+    costo:    parseFloat(w.querySelector('.pe-costo').value)||0,
+    note:     w.querySelector('.pe-note').value.trim(),
+    last_date:w.querySelector('.pe-date').value||today()};
+  if(sb){
+    if(periodicSt[key]?.id){const{error}=await sb.from('periodic_state').update(upd).eq('id',periodicSt[key].id);if(error)return toast('Errore','err');}
+    else{const{data,error}=await sb.from('periodic_state').insert([upd]).select().single();if(error)return toast('Errore','err');upd.id=data.id;}
+  } else { upd.id=periodicSt[key]?.id||Date.now(); }
+  periodicSt[key]=upd; editPer=null;
+  saveLocal(); renderPeriodic(); updateHeader(); toast('✅ Controllo registrato','ok');
+}
+function toggleEditPer(key){ editPer=(editPer===key)?null:key; renderPeriodic(); }
+
+/* ════════════════════════════════
+   NOTES CRUD
+════════════════════════════════ */
+async function addNote(){
+  const n={txt:'',color:NOTE_COLORS[0],created_at:new Date().toISOString()};
+  if(sb){const{data,error}=await sb.from('sticky_notes').insert([n]).select().single();if(error)return toast('Errore','err');n.id=data.id;}
+  else{n.id=Date.now();}
+  notes.push(n); saveLocal(); renderNotes();
+  setTimeout(()=>{const ta=document.querySelector(`#note-${n.id} textarea`);if(ta)ta.focus();},50);
+}
+async function updateNoteText(id,txt){
+  const n=notes.find(n=>n.id===id);if(!n)return;n.txt=txt;
+  if(sb)await sb.from('sticky_notes').update({txt}).eq('id',id);
+  saveLocal();
+}
+async function updateNoteColor(id,color){
+  const n=notes.find(n=>n.id===id);if(!n)return;n.color=color;
+  if(sb)await sb.from('sticky_notes').update({color}).eq('id',id);
+  saveLocal();renderNotes();
+}
+async function deleteNote(id){
+  notes=notes.filter(n=>n.id!==id);
+  if(sb)await sb.from('sticky_notes').delete().eq('id',id);
+  saveLocal();renderNotes();
+}
+
+/* ════════════════════════════════
+   HEADER
+════════════════════════════════ */
+function getNextServiceKm(){
+  const nm=MILESTONES.find(m=>!schedDone[m.km]?.eseguito&&m.km>currentKm);
+  let np=null;
+  PERIODIC.forEach(pt=>{
+    const last=periodicSt[pt.key]?.last_km||0;
+    const next=Math.ceil((last+1)/pt.interval)*pt.interval;
+    if(np===null||next<np)np=next;
+  });
+  if(!nm&&!np)return null;
+  if(!nm)return np;
+  if(!np)return nm.km;
+  return Math.min(nm.km,np);
+}
+function updateHeader(){
+  document.getElementById('hd-km').textContent=currentKm.toLocaleString('it');
+  const de=document.getElementById('hd-delta');
+  if(kmHistory.length>=2){
+    const delta=currentKm-kmHistory[kmHistory.length-2].km;
+    de.textContent=`+${delta.toLocaleString('it')} km`;
+    de.className='val neutral';
+  } else { de.textContent='—'; de.className='val neutral'; }
+  const next=getNextServiceKm();
+  const el=document.getElementById('hd-next');
+  if(!next){el.textContent='—';el.className='val';return;}
+  const diff=next-currentKm;
+  el.textContent=diff>0?`${diff.toLocaleString('it')} km`:'SCADUTO';
+  el.className=`val ${diff<=0?'danger':diff<500?'warn':'ok'}`;
+}
+
+/* ════════════════════════════════
+   SCADENZIARIO (1k→48k, solo prossimo)
+════════════════════════════════ */
+function toggleAllMiles(){
+  showAllMiles=!showAllMiles;
+  document.getElementById('sched-toggle-btn').textContent=
+    showAllMiles?'▲ Nascondi':'▼ Mostra tutti';
   renderSchedule();
-  renderChart();
-  toast(`✅ ${km.toLocaleString('it')} km salvati`, 'ok');
 }
+function renderSchedule(){
+  const tbody=document.getElementById('sched-body');
+  tbody.innerHTML='';
+  const sorted=[...MILESTONES].sort((a,b)=>a.km-b.km);
+  const nextIdx=sorted.findIndex(m=>!schedDone[m.km]?.eseguito);
 
-/* ============================================================
-   SAVE / EDIT / DELETE LOG
-   ============================================================ */
-async function saveLog() {
-  const data       = document.getElementById('nr-data').value;
-  const km         = parseInt(document.getElementById('nr-km').value)    || null;
-  const descrizione= document.getElementById('nr-desc').value.trim();
-  const costo      = parseFloat(document.getElementById('nr-costo').value) || 0;
-  const meccanico  = document.getElementById('nr-mecc').checked;
+  sorted.forEach((m,i)=>{
+    const d=schedDone[m.km]||{};
+    const done=!!d.eseguito;
+    const isNext=(i===nextIdx);
+    const diff=currentKm-m.km;
+    // visibilità: prossimo sempre, scaduti non fatti sempre, il resto solo se showAll
+    const visible=showAllMiles||isNext||(!done&&diff>0);
+    if(!visible)return;
 
-  if (!data)        return toast('Inserisci la data', 'err');
-  if (!descrizione) return toast('Inserisci una descrizione', 'err');
+    let bc,bt;
+    if(done){bc='s-done';bt='✓ FATTO';}
+    else if(diff>500){bc='s-over';bt='SCADUTO';}
+    else if(diff>=0){bc='s-near';bt='DA FARE';}
+    else if(diff>-800){bc='s-near';bt='PRESTO';}
+    else{bc='s-future';bt=(m.km-currentKm).toLocaleString('it')+' km';}
 
-  const entry = { data, km, descrizione, costo, meccanico };
-
-  if (sb) {
-    const { data: saved, error } = await sb.from('maintenance_log').insert([entry]).select().single();
-    if (error) return toast('Errore salvataggio', 'err');
-    logEntries.unshift(saved);
-  } else {
-    const rec = { id: Date.now(), ...entry };
-    logEntries.unshift(rec);
-    localStorage.setItem('xcape_log', JSON.stringify(logEntries));
-  }
-
-  clearNewRow();
-  renderLog();
-  renderStats();
-  toast('✅ Intervento salvato', 'ok');
-}
-
-async function saveEdit(id) {
-  const row  = document.querySelector(`tr[data-id="${id}"]`);
-  const data       = row.querySelector('.e-data').value;
-  const km         = parseInt(row.querySelector('.e-km').value)    || null;
-  const descrizione= row.querySelector('.e-desc').value.trim();
-  const costo      = parseFloat(row.querySelector('.e-costo').value) || 0;
-  const meccanico  = row.querySelector('.e-mecc').checked;
-
-  if (!data || !descrizione) return toast('Data e descrizione obbligatorie', 'err');
-
-  const upd = { data, km, descrizione, costo, meccanico };
-
-  if (sb) {
-    const { error } = await sb.from('maintenance_log').update(upd).eq('id', id);
-    if (error) return toast('Errore aggiornamento', 'err');
-  }
-
-  const i = logEntries.findIndex(e => e.id === id);
-  if (i >= 0) logEntries[i] = { ...logEntries[i], ...upd };
-  if (!sb) localStorage.setItem('xcape_log', JSON.stringify(logEntries));
-
-  editingId = null;
-  renderLog();
-  renderStats();
-  toast('✅ Intervento aggiornato', 'ok');
-}
-
-async function deleteLog(id) {
-  if (!confirm('Eliminare questo intervento?')) return;
-
-  if (sb) {
-    const { error } = await sb.from('maintenance_log').delete().eq('id', id);
-    if (error) return toast('Errore eliminazione', 'err');
-  }
-
-  logEntries = logEntries.filter(e => e.id !== id);
-  if (!sb) localStorage.setItem('xcape_log', JSON.stringify(logEntries));
-
-  renderLog();
-  renderStats();
-  toast('Intervento eliminato', 'ok');
-}
-
-/* ============================================================
-   LOGICA MANUTENZIONE
-   ============================================================ */
-function getNextMilestone() {
-  // milestoni principali
-  const mainNext = MILESTONES.find(m => m.km > currentKm);
-  // catena lubrificazione ogni 600 km
-  const nextCatena = Math.ceil((currentKm + 1) / 600) * 600;
-
-  if (!mainNext) return { km: nextCatena, label:'Check Catena', items:[ { d:'Lubrificazione catena trasmissione', m:false } ] };
-  if (nextCatena < mainNext.km) return { km: nextCatena, label:'Check Catena', items:[ { d:'Lubrificazione catena trasmissione', m:false } ] };
-  return mainNext;
-}
-
-/* ============================================================
-   RENDER — HEADER
-   ============================================================ */
-function updateHeader() {
-  document.getElementById('hd-km').textContent = currentKm.toLocaleString('it');
-  const next  = getNextMilestone();
-  const diff  = currentKm - next.km;          // neg = mancanti, pos = scaduto
-  const el    = document.getElementById('hd-tag');
-  el.textContent = diff.toLocaleString('it');
-  el.className   = 'val ' + (diff >= 0 ? 'danger' : (next.km - currentKm < 500 ? 'warn' : ''));
-}
-
-/* ============================================================
-   RENDER — NEXT SERVICE
-   ============================================================ */
-function renderNextService() {
-  const next      = getNextMilestone();
-  const remaining = next.km - currentKm;
-  const overdue   = remaining <= 0;
-
-  document.getElementById('ns-title').textContent =
-    overdue ? `⚠️ SCADUTO: ${next.label}` : `Prossimo Step: ${next.km.toLocaleString('it')} km`;
-
-  document.getElementById('ns-body').innerHTML = `
-    <div class="ns-km">${overdue
-      ? `+${Math.abs(remaining).toLocaleString('it')} km scaduto`
-      : `${remaining.toLocaleString('it')} km mancanti`}</div>
-    <div class="ns-label">${next.label}</div>
-    <ul class="ns-list">
-      ${(next.items || []).map(i => `
-        <li>
-          <span class="badge ${i.m ? 'badge-m':'badge-d'}">${i.m ? 'Mecc.':'DIY'}</span>
-          ${esc(i.d)}
-        </li>`).join('')}
-    </ul>`;
-}
-
-/* ============================================================
-   RENDER — SCADENZIARIO
-   ============================================================ */
-function renderSchedule() {
-  const tbody = document.getElementById('sched-body');
-  tbody.innerHTML = MILESTONES.map(({ km, label, items }) => {
-    const diff = currentKm - km;
-    // controlla se esiste un log vicino a questo km (±1500 km)
-    const hasLog = logEntries.some(e => e.km && Math.abs(e.km - km) <= 1500);
-
-    let cls, txt;
-    if (diff >= 0 && hasLog)      { cls='s-done';   txt='✅ Registrato';                         }
-    else if (diff > 500)           { cls='s-over';   txt=`🔴 Scaduto di +${diff.toLocaleString('it')} km`; }
-    else if (diff >= 0)            { cls='s-near';   txt=`⚠️ Nessun log — ${diff} km fa`;        }
-    else if (km - currentKm < 800){ cls='s-near';   txt=`⚠️ ${(km-currentKm).toLocaleString('it')} km`;   }
-    else                           { cls='s-future'; txt=`${(km-currentKm).toLocaleString('it')} km`;       }
-
-    const preview = items.slice(0,3).map(i=>i.d).join(', ')
-      + (items.length > 3 ? ` <em style="color:var(--muted)">+${items.length-3} altro</em>` : '');
-
-    return `<tr>
-      <td><span class="km-tag">${km.toLocaleString('it')}</span></td>
-      <td style="font-weight:600">${label}</td>
-      <td style="font-size:.8rem;color:var(--muted)">${preview}</td>
-      <td class="${cls}">${txt}</td>
-    </tr>`;
-  }).join('');
-}
-
-/* ============================================================
-   RENDER — LOG TABLE
-   ============================================================ */
-function renderLog() {
-  const tbody = document.getElementById('log-body');
-  tbody.innerHTML = '';
-
-  // ── new-row sempre in testa ──
-  const nr = document.createElement('tr');
-  nr.className = 'new-row';
-  nr.id = 'new-row';
-  nr.innerHTML = `
-    <td><input type="date"   id="nr-data"></td>
-    <td><input type="number" id="nr-km"   placeholder="KM"   min="0"></td>
-    <td><textarea id="nr-desc" rows="2"   placeholder="Descrizione intervento…"></textarea></td>
-    <td><input type="number" id="nr-costo" placeholder="0.00" step="0.01" min="0"></td>
-    <td style="text-align:center"><input type="checkbox" id="nr-mecc"></td>
-    <td>
-      <div class="act-col">
-        <button class="btn btn-red btn-sm" onclick="saveLog()">SALVA</button>
-        <button class="btn btn-ghost btn-sm" onclick="clearNewRow()">↺ PULISCI</button>
-      </div>
-    </td>`;
-  tbody.appendChild(nr);
-  setTodayOnNewRow();
-
-  if (!logEntries.length) {
-    const er = document.createElement('tr');
-    er.innerHTML = `<td colspan="6" style="text-align:center;color:var(--muted);padding:18px;font-style:italic">Nessun intervento registrato</td>`;
-    tbody.appendChild(er);
-    return;
-  }
-
-  logEntries.forEach(e => {
-    const tr = document.createElement('tr');
-    tr.setAttribute('data-id', e.id);
-
-    if (editingId === e.id) {
-      tr.innerHTML = `
-        <td><input type="date"   class="e-data"  value="${e.data}"></td>
-        <td><input type="number" class="e-km"    value="${e.km||''}" placeholder="KM"></td>
-        <td><textarea class="e-desc" rows="2">${esc(e.descrizione)}</textarea></td>
-        <td><input type="number" class="e-costo" value="${e.costo||0}" step="0.01"></td>
-        <td style="text-align:center"><input type="checkbox" class="e-mecc" ${e.meccanico?'checked':''}></td>
-        <td>
-          <div class="act-col">
-            <button class="btn btn-ok   btn-sm" onclick="saveEdit(${e.id})">✔ SALVA</button>
-            <button class="btn btn-ghost btn-sm" onclick="editingId=null;renderLog()">✕</button>
-          </div>
-        </td>`;
-    } else {
-      const badge = e.meccanico
-        ? `<span class="badge badge-m">Mecc.</span>`
-        : `<span class="badge badge-d">DIY</span>`;
-      tr.innerHTML = `
-        <td style="white-space:nowrap;font-size:.85rem">${fmtDate(e.data)}</td>
-        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">${e.km ? e.km.toLocaleString('it') : '—'}</td>
-        <td style="font-size:.875rem;white-space:pre-wrap">${esc(e.descrizione)}</td>
-        <td style="font-family:'Barlow Condensed',sans-serif;font-weight:600">€${parseFloat(e.costo||0).toFixed(2)}</td>
-        <td style="text-align:center">${badge}</td>
-        <td>
-          <div class="act-col">
-            <button class="btn btn-edit btn-sm" onclick="editingId=${e.id};renderLog()">✎ MOD</button>
-            <button class="btn btn-del  btn-sm" onclick="deleteLog(${e.id})">✕ DEL</button>
-          </div>
-        </td>`;
-    }
+    const tr=document.createElement('tr');
+    if(done)tr.className='done-row';
+    tr.innerHTML=`
+      <td><span class="km-tag">${m.km.toLocaleString('it')}</span></td>
+      <td ${(!done&&isNext)?'style="background:#FFFDE7"':''}>
+        <div class="mile-lbl">${done?`<s style="opacity:.4">${esc(m.label)}</s>`:esc(m.label)}
+          ${isNext&&!done?' <span style="color:var(--red);font-size:.62rem;font-weight:800">◀ PROSSIMO</span>':''}
+        </div>
+        <div class="mile-ops">${m.ops.slice(0,3).join(', ')}${m.ops.length>3?'…':''}</div>
+      </td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">${d.km_done?d.km_done.toLocaleString('it'):'—'}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif">${d.costo>0?'€'+parseFloat(d.costo).toFixed(0):'—'}</td>
+      <td style="text-align:center"><input type="checkbox" ${done?'checked':''} onchange="quickToggle(${m.km},this.checked)"></td>
+      <td><span class="sb ${bc}">${bt}</span></td>
+      <td><button class="btn btn-edit btn-xs" onclick="toggleEditMile(${m.km})">${editMile===m.km?'✕':'✎'}</button></td>`;
     tbody.appendChild(tr);
+
+    if(editMile===m.km){
+      const er=document.createElement('tr');
+      er.className='sub-row-edit';
+      er.innerHTML=`<td colspan="7">
+        <div id="se-${m.km}" class="eg">
+          <div class="ef"><label>KM Effettivi</label><input type="number" class="se-km" value="${d.km_done||''}" placeholder="${currentKm}"></div>
+          <div class="ef"><label>Data Intervento</label><input type="date" class="se-date" value="${d.done_date||today()}"></div>
+          <div class="ef"><label>Costo €</label><input type="number" class="se-costo" value="${d.costo||''}" step="0.01" min="0"></div>
+          <div class="ef full"><label>Note (officina, ricambi, osservazioni…)</label><textarea class="se-note" rows="3">${esc(d.note||'')}</textarea></div>
+          <div class="ef" style="display:flex;align-items:center;gap:6px">
+            <input type="checkbox" class="se-done" ${done?'checked':''}><span style="font-size:.8rem;font-weight:600">Eseguito</span>
+          </div>
+          <div class="ef-actions">
+            <button class="btn btn-ghost btn-sm" onclick="toggleEditMile(${m.km})">Annulla</button>
+            <button class="btn btn-green btn-sm" onclick="saveMilestone(${m.km})">✔ Salva</button>
+          </div>
+        </div></td>`;
+      tbody.appendChild(er);
+    }
   });
 }
 
-/* ============================================================
-   RENDER — CHART
-   ============================================================ */
-function renderChart() {
-  const canvas = document.getElementById('km-chart');
-  const empty  = document.getElementById('chart-empty');
+/* ════════════════════════════════
+   CONTROLLI PERIODICI
+════════════════════════════════ */
+function renderPeriodic(){
+  const tbody=document.getElementById('periodic-body');
+  tbody.innerHTML='';
+  PERIODIC.forEach(pt=>{
+    const s=periodicSt[pt.key]||{};
+    const last=s.last_km||0;
+    const next=Math.ceil((last+1)/pt.interval)*pt.interval;
+    const diff=currentKm-next;
+    let bc,bt;
+    if(diff>pt.interval*.5){bc='s-over';bt='SCADUTO';}
+    else if(diff>=0){bc='s-near';bt='DA FARE';}
+    else if(diff>-pt.interval*.25){bc='s-near';bt='PRESTO';}
+    else{bc='s-future';bt=(next-currentKm).toLocaleString('it')+' km';}
 
-  if (kmHistory.length < 2) {
-    canvas.style.display = 'none';
-    empty.style.display  = 'block';
-    return;
-  }
-  canvas.style.display = 'block';
-  empty.style.display  = 'none';
+    const tr=document.createElement('tr');
+    if(diff>=0)tr.className='over-row';
+    tr.innerHTML=`
+      <td>${pt.icon} <strong>${esc(pt.label)}</strong>${s.note?`<div style="font-size:.68rem;color:var(--muted);font-style:italic">${esc(s.note)}</div>`:''}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">ogni ${pt.interval.toLocaleString('it')}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif">${last?last.toLocaleString('it')+(s.last_date?`<br><span style="font-size:.65rem;color:var(--muted)">${s.last_date}</span>`:''):'—'}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">${next.toLocaleString('it')}</td>
+      <td><span class="sb ${bc}">${bt}</span></td>
+      <td><button class="btn btn-edit btn-xs" onclick="toggleEditPer('${pt.key}')">${editPer===pt.key?'✕':'Registra'}</button></td>`;
+    tbody.appendChild(tr);
 
-  const labels = kmHistory.map(e => {
-    const d = new Date(e.recorded_at);
-    return d.toLocaleDateString('it', { day:'2-digit', month:'short' });
+    if(editPer===pt.key){
+      const er=document.createElement('tr');
+      er.innerHTML=`<td colspan="6" style="background:#F8FFF8;padding:10px 14px;border-bottom:2px solid var(--green)">
+        <div id="pe-${pt.key}" class="eg">
+          <div class="ef"><label>KM Eseguito</label><input type="number" class="pe-km" value="${currentKm||last}"></div>
+          <div class="ef"><label>Data</label><input type="date" class="pe-date" value="${today()}"></div>
+          <div class="ef"><label>Costo €</label><input type="number" class="pe-costo" value="${s.costo||''}" step="0.01"></div>
+          <div class="ef full"><label>Note</label><textarea class="pe-note" rows="2" placeholder="Prodotto usato, osservazioni…">${esc(s.note||'')}</textarea></div>
+          <div class="ef-actions">
+            <button class="btn btn-ghost btn-sm" onclick="toggleEditPer('${pt.key}')">Annulla</button>
+            <button class="btn btn-green btn-sm" onclick="savePeriodic('${pt.key}')">✔ Salva</button>
+          </div>
+        </div></td>`;
+      tbody.appendChild(er);
+    }
   });
-  const data = kmHistory.map(e => e.km);
+}
 
-  if (kmChart) kmChart.destroy();
-  kmChart = new Chart(canvas.getContext('2d'), {
-    type: 'line',
-    data: {
-      labels,
-      datasets: [{
-        data,
-        borderColor:     '#C8102E',
-        backgroundColor: 'rgba(200,16,46,.08)',
-        borderWidth: 2.5,
-        pointBackgroundColor: '#C8102E',
-        pointRadius: 4,
-        fill: true,
-        tension: 0.35,
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        tooltip: { callbacks: { label: c => `${c.parsed.y.toLocaleString('it')} km` } }
+/* ════════════════════════════════
+   POST-ITS
+════════════════════════════════ */
+function renderNotes(){
+  const c=document.getElementById('notes-container');
+  c.querySelectorAll('.postit').forEach(el=>el.remove());
+  document.getElementById('notes-empty').style.display=notes.length?'none':'block';
+  notes.forEach(n=>{
+    const div=document.createElement('div');
+    div.className='postit';div.id=`note-${n.id}`;div.style.background=n.color;
+    const dots=NOTE_COLORS.map(col=>`<span class="cdot ${col===n.color?'active':''}" style="background:${col}" onclick="updateNoteColor(${n.id},'${col}')"></span>`).join('');
+    div.innerHTML=`<textarea class="postit-text" placeholder="Scrivi una nota…" onblur="updateNoteText(${n.id},this.value)">${esc(n.txt)}</textarea>
+      <div class="pf"><div class="cdots">${dots}</div><button class="pdel" onclick="deleteNote(${n.id})">✕</button></div>`;
+    c.appendChild(div);
+  });
+}
+
+/* ════════════════════════════════
+   CHART FILTERS
+════════════════════════════════ */
+function buildChartFilters(){
+  if(!kmHistory.length){document.getElementById('chart-filters').innerHTML='';return;}
+  const years=[...new Set(kmHistory.map(e=>new Date(e.recorded_at).getFullYear()))].sort();
+  let html=`<button class="cf-btn ${chartFilter.type==='all'?'active':''}" onclick="setChartFilter('all',null)">Tutto</button>`;
+  html+=`<span class="cf-sep">│</span>`;
+  years.forEach(y=>{
+    html+=`<button class="cf-btn ${chartFilter.type==='year'&&chartFilter.value===y?'active':''}" onclick="setChartFilter('year',${y})">${y}</button>`;
+    const months=[...new Set(kmHistory
+      .filter(e=>new Date(e.recorded_at).getFullYear()===y)
+      .map(e=>new Date(e.recorded_at).getMonth()))].sort((a,b)=>a-b);
+    if(months.length>1){
+      months.forEach(mo=>{
+        const lbl=new Date(y,mo,1).toLocaleDateString('it',{month:'short'});
+        const k=`${y}-${mo}`;
+        html+=`<button class="cf-btn ${chartFilter.type==='month'&&chartFilter.value===k?'active':''}" onclick="setChartFilter('month','${k}')" style="font-size:.58rem">${lbl}</button>`;
+      });
+    }
+  });
+  document.getElementById('chart-filters').innerHTML=html;
+}
+function setChartFilter(type,value){chartFilter={type,value};buildChartFilters();renderChart();}
+function getFilteredHistory(){
+  if(chartFilter.type==='all')return kmHistory;
+  if(chartFilter.type==='year')return kmHistory.filter(e=>new Date(e.recorded_at).getFullYear()===chartFilter.value);
+  if(chartFilter.type==='month'){
+    const[y,mo]=chartFilter.value.split('-').map(Number);
+    return kmHistory.filter(e=>{const d=new Date(e.recorded_at);return d.getFullYear()===y&&d.getMonth()===mo;});
+  }
+  return kmHistory;
+}
+
+/* ════════════════════════════════
+   CHART — linee tagliandi
+════════════════════════════════ */
+function renderChart(){
+  const canvas=document.getElementById('km-chart');
+  const msg=document.getElementById('chart-msg');
+  const filtered=getFilteredHistory();
+  if(filtered.length<2){canvas.style.display='none';msg.style.display='block';return;}
+  canvas.style.display='block';msg.style.display='none';
+
+  const labels=filtered.map(e=>{
+    const d=new Date(e.recorded_at);
+    return d.toLocaleDateString('it',{day:'2-digit',month:'short',year:'2-digit'});
+  });
+  const data=filtered.map(e=>e.km);
+  const minKm=Math.min(...data)*0.96;
+  const maxKm=Math.max(...data)*1.04;
+
+  // annotazioni linee orizzontali per ogni tagliando nel range visibile
+  const annotations={};
+  MILESTONES.forEach(m=>{
+    if(m.km<minKm||m.km>maxKm)return;
+    const done=!!schedDone[m.km]?.eseguito;
+    annotations[`m${m.km}`]={
+      type:'line',yMin:m.km,yMax:m.km,
+      borderColor:done?'rgba(27,138,75,.4)':'rgba(200,16,46,.35)',
+      borderWidth:1,borderDash:[5,4],
+      label:{
+        content:`${(m.km/1000).toFixed(0)}k`,
+        display:true,position:'end',
+        font:{family:'Barlow Condensed',size:9,weight:'bold'},
+        color:done?'#1B8A4B':'#C8102E',
+        backgroundColor:'rgba(255,255,255,.75)',
+        padding:{x:3,y:1}
+      }
+    };
+  });
+
+  if(kmChart)kmChart.destroy();
+  kmChart=new Chart(canvas.getContext('2d'),{
+    type:'line',
+    data:{labels,datasets:[{
+      data,
+      borderColor:'#C8102E',
+      backgroundColor:'rgba(200,16,46,.05)',
+      borderWidth:2,
+      pointBackgroundColor:'#C8102E',
+      pointRadius:4,pointHoverRadius:6,
+      fill:true,tension:.3
+    }]},
+    options:{
+      responsive:true,
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{label:c=>`${c.parsed.y.toLocaleString('it')} km`}},
+        annotation:{annotations}
       },
-      scales: {
-        y: {
-          ticks: {
-            callback: v => `${v.toLocaleString('it')}`,
-            font: { family:'Barlow Condensed', size:11 }
-          },
-          grid: { color:'#F0F0F0' }
-        },
-        x: {
-          ticks: { font:{ family:'Barlow Condensed', size:11 } },
-          grid:  { display:false }
-        }
+      scales:{
+        y:{min:minKm,max:maxKm,
+          ticks:{callback:v=>`${(v/1000).toFixed(0)}k`,font:{family:'Barlow Condensed',size:10}},
+          grid:{color:'#EEEEEE'}},
+        x:{ticks:{font:{family:'Barlow Condensed',size:10},maxRotation:35},grid:{display:false}}
       }
     }
   });
 }
 
-/* ============================================================
-   RENDER — STATS
-   ============================================================ */
-function renderStats() {
-  const total = logEntries.reduce((s, e) => s + parseFloat(e.costo||0), 0);
-  const count = logEntries.length;
-  document.getElementById('s-total').textContent = `€${total.toFixed(2)}`;
-  document.getElementById('s-count').textContent = count;
-  document.getElementById('s-avg').textContent   = count ? `€${Math.round(total/count)}` : '€0';
-}
-
-/* ============================================================
-   UTILS
-   ============================================================ */
-function startClock() {
-  const tick = () => {
-    const n = new Date();
-    const t = n.toLocaleTimeString('it', { hour:'2-digit', minute:'2-digit' });
-    const d = n.toLocaleDateString('it', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-    document.getElementById('clock').textContent =
-      `${t} · ${d.charAt(0).toUpperCase() + d.slice(1)}`;
-  };
-  tick(); setInterval(tick, 1000);
-}
-
-function setTodayOnNewRow() {
-  const el = document.getElementById('nr-data');
-  if (el) el.value = new Date().toISOString().split('T')[0];
-}
-
-function clearNewRow() {
-  ['nr-km','nr-desc','nr-costo'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
+/* ════════════════════════════════
+   MODAL ALERT
+════════════════════════════════ */
+function checkAlerts(){
+  const omile=MILESTONES.filter(m=>!schedDone[m.km]?.eseguito&&m.km<=currentKm);
+  const oper=PERIODIC.filter(pt=>{
+    const last=periodicSt[pt.key]?.last_km||0;
+    return Math.ceil((last+1)/pt.interval)*pt.interval<=currentKm;
   });
-  const mecc = document.getElementById('nr-mecc');
-  if (mecc) mecc.checked = false;
-  setTodayOnNewRow();
+  if(!omile.length&&!oper.length)return;
+  let html='';
+  if(omile.length){
+    html+=`<div class="m-sec">🔧 Tagliandi da Eseguire</div>`;
+    omile.forEach(m=>{
+      const diff=currentKm-m.km;
+      html+=`<div class="m-item ${diff>500?'ov':'wa'}"><div class="mi">⚠️</div>
+        <div><div class="mt">${esc(m.label)}</div>
+        <div class="ms">Scaduto di ${diff.toLocaleString('it')} km — ${m.ops.slice(0,3).join(', ')}</div></div></div>`;
+    });
+  }
+  if(oper.length){
+    html+=`<div class="m-sec">🔗 Controlli Periodici</div>`;
+    oper.forEach(pt=>{
+      const last=periodicSt[pt.key]?.last_km||0;
+      const next=Math.ceil((last+1)/pt.interval)*pt.interval;
+      const diff=currentKm-next;
+      html+=`<div class="m-item ${diff>pt.interval*.5?'ov':'wa'}"><div class="mi">${pt.icon}</div>
+        <div><div class="mt">${esc(pt.label)}</div>
+        <div class="ms">+${diff.toLocaleString('it')} km scaduto — ultimo: ${last?last.toLocaleString('it')+' km':'mai'}</div></div></div>`;
+    });
+  }
+  document.getElementById('modal-body').innerHTML=html;
+  document.getElementById('modal').style.display='flex';
 }
+function closeModal(){document.getElementById('modal').style.display='none';}
 
-function fmtDate(s) {
-  if (!s) return '—';
-  const d = new Date(s + 'T00:00:00');
-  return d.toLocaleDateString('it', { day:'2-digit', month:'2-digit', year:'numeric' });
+/* ════════════════════════════════
+   UTILS
+════════════════════════════════ */
+function startClock(){
+  const tick=()=>{
+    const n=new Date();
+    const t=n.toLocaleTimeString('it',{hour:'2-digit',minute:'2-digit'});
+    const d=n.toLocaleDateString('it',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+    document.getElementById('clock').textContent=`${t} · ${d.charAt(0).toUpperCase()+d.slice(1)}`;
+  };
+  tick();setInterval(tick,1000);
 }
-
-function esc(s) {
-  return (s||'')
-    .replace(/&/g,'&amp;')
-    .replace(/</g,'&lt;')
-    .replace(/>/g,'&gt;');
+function today(){return new Date().toISOString().split('T')[0];}
+function esc(s){return(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function toast(msg,type='ok'){
+  const el=document.getElementById('toast');
+  el.textContent=msg;el.className=`toast ${type} show`;
+  setTimeout(()=>el.classList.remove('show'),3000);
 }
-
-function toast(msg, type='ok') {
-  const el = document.getElementById('toast');
-  el.textContent = msg;
-  el.className   = `toast ${type} show`;
-  setTimeout(() => el.classList.remove('show'), 3000);
-}
-
-/* ── Avvio ── */
-document.addEventListener('DOMContentLoaded', init);
+document.addEventListener('DOMContentLoaded',init);
 </script>
 </body>
 </html>
