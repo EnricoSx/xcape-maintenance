@@ -2,7 +2,7 @@
 <html lang="it">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
   <title>X-Cape 650 — Maintenance</title>
   <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;1,700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
@@ -11,121 +11,143 @@
   <style>
     :root{
       --red:#C8102E;--red-dk:#9E0B22;--gold:#8B7136;
+      --orange:#C8102E;
       --dark:#111;--bg:#E8E8E8;--surface:#FFF;
       --surface2:#F5F5F5;--border:#DDD;--text:#1A1A1A;
       --muted:#888;--green:#1B8A4B;--yellow:#E8A000;
       --done-bg:#F0F0F0;--done-text:#B0B0B0;
+      --card-shadow:0 1px 5px rgba(0,0,0,.08);
     }
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font-size:13px}
+    html,body{overflow-x:hidden;width:100%}
+    body{font-family:'Barlow',sans-serif;background:var(--bg);color:var(--text);font-size:15px;min-height:100vh}
 
     /* ── HEADER ── */
     .hd-line{height:3px;background:linear-gradient(to right,transparent,var(--gold) 12%,var(--gold) 88%,transparent)}
-    header{background:var(--red);height:46px;display:flex;align-items:center;padding:0 18px;gap:12px}
-    .hd-xcape{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:800;font-size:1.45rem;color:white;letter-spacing:.02em;flex-shrink:0}
-    .hd-sep{width:1px;height:18px;background:rgba(255,255,255,.28);flex-shrink:0}
-    .hd-clock{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:600;color:rgba(255,255,255,.72);letter-spacing:.05em;flex-shrink:0}
+    header{background:var(--red);height:50px;display:flex;align-items:center;padding:0 16px;gap:12px}
+    .hd-xcape{font-family:'Barlow Condensed',sans-serif;font-style:italic;font-weight:800;font-size:1.6rem;color:white;letter-spacing:.02em;flex-shrink:0}
+    .hd-sep{width:1px;height:20px;background:rgba(255,255,255,.28);flex-shrink:0}
+    .hd-clock{font-family:'Barlow Condensed',sans-serif;font-size:.82rem;font-weight:600;color:rgba(255,255,255,.75);letter-spacing:.05em;flex-shrink:0}
     .hd-spacer{flex:1}
-    .hd-mm img{height:30px;display:block}
-    .hd-mm-fb{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;color:rgba(255,255,255,.5);letter-spacing:.18em;text-transform:uppercase}
+    .hd-logo{display:flex;align-items:center;gap:8px}
+    .hd-logo img{height:34px;display:block;filter:brightness(0) invert(1);opacity:.9}
+    .hd-logo-name{font-family:'Barlow Condensed',sans-serif;font-size:.72rem;font-weight:700;color:rgba(255,255,255,.7);letter-spacing:.18em;text-transform:uppercase}
+    .hd-notif-btn{background:none;border:none;cursor:pointer;color:rgba(255,255,255,.55);font-size:1.1rem;padding:4px;transition:color .15s;flex-shrink:0}
+    .hd-notif-btn:hover{color:white}.hd-notif-btn.active{color:var(--yellow)}
 
     /* ── KM BAR ── */
-    .km-bar{background:var(--dark);display:flex;align-items:center;padding:7px 18px;gap:14px;flex-wrap:wrap}
+    .km-bar{background:var(--dark);display:flex;align-items:center;padding:7px 16px;gap:12px;flex-wrap:wrap}
     .km-stat{display:flex;flex-direction:column;align-items:center;flex-shrink:0}
-    .km-stat .lbl{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:1px;white-space:nowrap}
-    .km-stat .val{font-family:'Barlow Condensed',sans-serif;font-size:1.45rem;font-weight:800;color:white;line-height:1}
-    .km-stat .val.warn{color:var(--yellow)}.km-stat .val.danger{color:var(--red)}.km-stat .val.ok{color:var(--green)}.km-stat .val.neutral{color:#777}
-    .km-input-wrap{display:flex;align-items:center;gap:8px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;padding:0 10px;height:36px}
-    .km-input-wrap label{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#3E3E3E;white-space:nowrap}
-    .km-input-wrap input{width:96px;background:transparent;border:none;outline:none;font-family:'Barlow Condensed',sans-serif;font-size:1.2rem;font-weight:700;color:white;padding:0}
+    .km-stat .lbl{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:#555;margin-bottom:1px;white-space:nowrap}
+    .km-stat .val{font-family:'Barlow Condensed',sans-serif;font-size:1.55rem;font-weight:800;color:white;line-height:1}
+    .km-stat .val.warn{color:var(--yellow)}.km-stat .val.danger{color:var(--red)}.km-stat .val.ok{color:var(--green)}.km-stat .val.neutral{color:#666}
+    .km-input-wrap{display:flex;align-items:center;gap:8px;background:#1A1A1A;border:1px solid #2A2A2A;border-radius:4px;padding:0 10px;height:38px}
+    .km-input-wrap:focus-within{border-color:var(--red)}
+    .km-input-wrap label{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#444;white-space:nowrap}
+    .km-input-wrap input{width:90px;background:transparent;border:none;outline:none;font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:700;color:white;padding:0}
     .km-input-wrap input::placeholder{color:#2E2E2E}
-    .km-input-wrap .km-hint{font-family:'Barlow Condensed',sans-serif;font-size:.55rem;color:#2E2E2E;white-space:nowrap}
-    .bar-sep{width:1px;height:22px;background:#2A2A2A;flex-shrink:0}
+    .km-input-wrap .km-hint{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;color:#333;white-space:nowrap}
+    .bar-sep{width:1px;height:24px;background:#2A2A2A;flex-shrink:0}
 
-    /* ── MAIN GRID ── */
-    main{display:grid;grid-template-columns:1fr 230px;gap:12px;padding:12px 12px 0;max-width:1440px;margin:0 auto;align-items:start}
-    .main-left{display:flex;flex-direction:column;gap:12px}
-    .main-right{display:flex;flex-direction:column;gap:12px}
+    /* ── LAYOUT ── */
+    main{display:grid;grid-template-columns:1fr 240px;gap:12px;padding:12px 12px 0;max-width:1440px;margin:0 auto;align-items:start;width:100%}
+    .main-left{display:flex;flex-direction:column;gap:12px;min-width:0}
+    .main-right{display:flex;flex-direction:column;gap:12px;min-width:0}
     .chart-row{padding:0 12px 12px;max-width:1440px;margin:0 auto;width:100%}
 
     /* ── CARDS ── */
-    .card{background:var(--surface);border-radius:5px;box-shadow:0 1px 5px rgba(0,0,0,.08);overflow:hidden}
+    .card{background:var(--surface);border-radius:5px;box-shadow:var(--card-shadow);overflow:hidden;border:1px solid var(--border)}
     .ch{display:flex;align-items:center;justify-content:space-between;padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface2)}
-    .ch h2{font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
-    .ch-actions{display:flex;align-items:center;gap:7px}
-    .cb{padding:12px}
+    .ch h2{font-family:'Barlow Condensed',sans-serif;font-size:.7rem;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--muted)}
+    .ch-actions{display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+    .cb{padding:13px}
 
     /* ── TABLES ── */
-    .tbl-wrap{overflow-x:auto}
-    table.st,table.pt{width:100%;border-collapse:collapse;font-size:.8rem}
-    table.st th,table.pt th{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:6px 9px;border-bottom:2px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap}
-    table.st td,table.pt td{padding:6px 9px;border-bottom:1px solid var(--border);vertical-align:middle}
-    table.st tr:last-child td,table.pt tr:last-child td{border-bottom:none}
+    .tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+    table.st,table.pt,table.dl{width:100%;border-collapse:collapse;font-size:.875rem}
+    table.st th,table.pt th,table.dl th{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.13em;text-transform:uppercase;color:var(--muted);padding:7px 10px;border-bottom:2px solid var(--border);background:var(--surface2);text-align:left;white-space:nowrap}
+    table.st td,table.pt td,table.dl td{padding:7px 10px;border-bottom:1px solid var(--border);vertical-align:middle}
+    table.st tr:last-child td,table.pt tr:last-child td,table.dl tr:last-child td{border-bottom:none}
     table.st tr.done-row td{background:var(--done-bg);color:var(--done-text)}
-    table.st tr.sub-row-edit td{background:#FFF8F8;padding:10px 14px;border-bottom:2px solid var(--red)}
+    table.st tr.sub-row-edit td{background:#FFF8F8;padding:11px 15px;border-bottom:2px solid var(--red)}
     table.pt tr.over-row td{background:#FFF5F5}
+    table.dl tr.dl-over td{background:#FFF0F0}
+    table.dl tr.dl-warn td{background:#FFFBF0}
     table.st input[type=number],table.st input[type=text],table.st input[type=date],table.st textarea,
     table.pt input[type=number],table.pt input[type=date],table.pt textarea{
-      width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:3px;
-      font-family:'Barlow',sans-serif;font-size:.8rem;outline:none;background:white;resize:vertical;transition:border-color .15s}
+      width:100%;padding:5px 8px;border:1px solid var(--border);border-radius:3px;
+      font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;
+      background:white;color:var(--text);resize:vertical;transition:border-color .15s}
     table.st input:focus,table.st textarea:focus{border-color:var(--red)}
     table.pt input:focus,table.pt textarea:focus{border-color:var(--green)}
-    table.st input[type=checkbox]{width:14px;height:14px;accent-color:var(--red);cursor:pointer}
-    .km-tag{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:.95rem;color:var(--dark)}
-    .mile-lbl{font-weight:600;font-size:.8rem}
-    .mile-ops{font-size:.7rem;color:var(--muted);font-style:italic;margin-top:1px}
+    table.st input[type=checkbox]{width:15px;height:15px;accent-color:var(--red);cursor:pointer}
+    .km-tag{font-family:'Barlow Condensed',sans-serif;font-weight:800;font-size:1rem;color:var(--dark)}
+    .mile-lbl{font-weight:600;font-size:.875rem}
+    .mile-ops{font-size:.78rem;color:var(--muted);font-style:italic;margin-top:2px}
 
     /* ── STATUS BADGES ── */
-    .sb{font-family:'Barlow Condensed',sans-serif;font-size:.58rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 5px;border-radius:3px;white-space:nowrap}
-    .s-done{background:#E8F5E9;color:var(--green)}.s-over{background:#FFEBEE;color:var(--red)}
-    .s-near{background:#FFF8E1;color:var(--yellow)}.s-future{background:var(--surface2);color:var(--muted)}
+    .sb{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:2px 6px;border-radius:3px;white-space:nowrap}
+    .s-done{background:#E8F5E9;color:var(--green)}
+    .s-over{background:#FFEBEE;color:var(--red)}
+    .s-near{background:#FFF8E1;color:var(--yellow)}
+    .s-future{background:var(--surface2);color:var(--muted)}
 
     /* ── BUTTONS ── */
     .btn{border:none;border-radius:3px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-weight:700;letter-spacing:.06em;text-transform:uppercase;transition:background .12s,transform .08s;white-space:nowrap}
     .btn:active{transform:scale(.96)}
-    .btn-xs{padding:3px 7px;font-size:.65rem}.btn-sm{padding:5px 10px;font-size:.72rem}
+    .btn-xs{padding:3px 8px;font-size:.72rem}.btn-sm{padding:6px 12px;font-size:.78rem}
     .btn-red{background:var(--red);color:white}.btn-red:hover{background:var(--red-dk)}
     .btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{background:var(--border)}
     .btn-green{background:var(--green);color:white}.btn-green:hover{background:#136B38}
-    .btn-edit{background:#E3F2FD;color:#1565C0}.btn-edit:hover{background:#BBDEFB}
-    .btn-circ{background:var(--red);color:white;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;line-height:1;padding:0;flex-shrink:0}
+    .btn-edit{background:#E3F2FD;color:#1565C0;border:1px solid #BBDEFB}.btn-edit:hover{background:#BBDEFB}
+    .btn-circ{background:var(--red);color:white;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.15rem;line-height:1;padding:0;flex-shrink:0}
 
     /* ── POST-ITS ── */
-    .pc{padding:10px;display:flex;flex-direction:column;gap:8px}
+    .pc{padding:10px;display:flex;flex-direction:column;gap:9px}
     .postit{border-radius:2px;padding:9px 10px;box-shadow:2px 3px 8px rgba(0,0,0,.13)}
-    .postit-text{width:100%;background:transparent;border:none;outline:none;font-family:'Barlow',sans-serif;font-size:.8rem;color:#333;resize:none;min-height:54px;line-height:1.45}
+    .postit-text{width:100%;background:transparent;border:none;outline:none;font-family:'Barlow',sans-serif;font-size:.875rem;color:#333;resize:none;min-height:54px;line-height:1.45}
     .pf{display:flex;align-items:center;justify-content:space-between;margin-top:4px}
     .cdots{display:flex;gap:4px}
     .cdot{width:10px;height:10px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:transform .1s}
     .cdot:hover{transform:scale(1.2)}.cdot.active{border-color:rgba(0,0,0,.5)}
-    .pdel{background:none;border:none;cursor:pointer;color:rgba(0,0,0,.22);font-size:.82rem;padding:2px 4px;border-radius:2px;transition:color .12s,background .12s}
+    .pdel{background:none;border:none;cursor:pointer;color:rgba(0,0,0,.22);font-size:.82rem;padding:2px 4px;border-radius:2px;transition:color .12s}
     .pdel:hover{color:var(--red);background:rgba(200,16,46,.08)}
-    .pe-empty{text-align:center;color:var(--muted);font-size:.72rem;font-style:italic;padding:16px}
+    .pe-empty{text-align:center;color:var(--muted);font-size:.78rem;font-style:italic;padding:16px}
+
+    /* ── LINKS ── */
+    .links-list{display:flex;flex-direction:column;gap:7px;padding:10px}
+    .link-item{display:flex;align-items:center;gap:8px;padding:7px 10px;background:var(--surface2);border-radius:4px;border:1px solid var(--border)}
+    .link-item a{color:#1565C0;font-size:.875rem;text-decoration:none;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .link-item a:hover{text-decoration:underline}
+    .link-add-form{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);flex-wrap:wrap}
+    .link-add-form input{flex:1;min-width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:3px;background:white;color:var(--text);font-family:'Barlow',sans-serif;font-size:.82rem;outline:none;transition:border-color .15s}
+    .link-add-form input:focus{border-color:var(--red)}
+    .link-empty{text-align:center;color:var(--muted);font-size:.78rem;font-style:italic;padding:12px}
 
     /* ── EDIT GRID ── */
     .eg{display:grid;grid-template-columns:1fr 1fr 1fr;gap:9px;align-items:end}
-    .ef label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:.56rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
+    .ef label{display:block;font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase;color:var(--muted);margin-bottom:3px}
     .ef.full{grid-column:1/-1}
-    .ef-actions{grid-column:1/-1;display:flex;gap:7px;justify-content:flex-end;margin-top:4px}
+    .ef-actions{grid-column:1/-1;display:flex;gap:8px;justify-content:flex-end;margin-top:5px}
 
     /* ── CHART FILTERS ── */
-    .cf-btn{font-family:'Barlow Condensed',sans-serif;font-size:.63rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 8px;border-radius:3px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .12s}
+    .cf-btn{font-family:'Barlow Condensed',sans-serif;font-size:.68rem;font-weight:700;letter-spacing:.05em;text-transform:uppercase;padding:3px 9px;border-radius:3px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);cursor:pointer;transition:all .12s}
     .cf-btn:hover{background:var(--border)}.cf-btn.active{background:var(--red);color:white;border-color:var(--red)}
-    .cf-sep{color:#CCC;margin:0 1px;font-size:.8rem}
+    .cf-sep{color:#CCC;margin:0 2px;font-size:.8rem}
 
     /* ── MODAL ── */
     .modal-ov{position:fixed;inset:0;z-index:9000;background:rgba(0,0,0,.65);display:flex;align-items:center;justify-content:center;animation:fi .18s ease}
     @keyframes fi{from{opacity:0}to{opacity:1}}
-    .modal-box{background:var(--surface);border-radius:7px;max-width:480px;width:92%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:su .2s ease}
+    .modal-box{background:var(--surface);border-radius:7px;max-width:500px;width:94%;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);animation:su .2s ease}
     @keyframes su{from{transform:translateY(14px);opacity:0}to{transform:translateY(0);opacity:1}}
-    .modal-h{background:var(--red);color:white;padding:13px 18px;font-family:'Barlow Condensed',sans-serif;font-size:1rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+    .modal-h{background:var(--red);color:white;padding:13px 18px;font-family:'Barlow Condensed',sans-serif;font-size:1.05rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
     .modal-b{padding:16px;max-height:60vh;overflow-y:auto}
-    .m-sec{font-family:'Barlow Condensed',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);margin:12px 0 7px}
+    .m-sec{font-family:'Barlow Condensed',sans-serif;font-size:.65rem;font-weight:700;letter-spacing:.17em;text-transform:uppercase;color:var(--muted);margin:14px 0 8px}
     .m-sec:first-child{margin-top:0}
     .m-item{display:flex;align-items:flex-start;gap:9px;padding:7px 10px;border-radius:4px;margin-bottom:5px;border-left:3px solid}
     .m-item.ov{background:#FFEBEE;border-color:var(--red)}.m-item.wa{background:#FFF8E1;border-color:var(--yellow)}
     .m-item .mi{font-size:.9rem;flex-shrink:0;margin-top:1px}
-    .m-item .mt{font-weight:600;font-size:.82rem}.m-item .ms{font-size:.7rem;color:var(--muted);margin-top:2px}
+    .m-item .mt{font-weight:600;font-size:.875rem}.m-item .ms{font-size:.75rem;color:var(--muted);margin-top:2px}
     .modal-f{padding:10px 16px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 
     /* ── TOAST ── */
@@ -133,20 +155,49 @@
     .toast.show{opacity:1;transform:translateY(0)}
     .toast.ok{border-left:3px solid var(--green)}.toast.err{border-left:3px solid var(--red)}
 
-    #cfg-banner{display:none;background:#FFF3CD;color:#856404;padding:5px 18px;font-size:.72rem;text-align:center}
+    #cfg-banner{display:none;background:#FFF3CD;color:#856404;padding:5px 18px;font-size:.78rem;text-align:center}
 
-    @media(max-width:860px){main{grid-template-columns:1fr}.km-bar{gap:10px}}
+    /* ── DEADLINES ── */
+    .dl-date-wrap{display:flex;flex-direction:column;gap:2px}
+    .dl-date-input{width:100%;padding:4px 7px;border:1px solid var(--border);border-radius:3px;background:white;color:var(--text);font-family:'Barlow',sans-serif;font-size:.82rem;outline:none;transition:border-color .15s}
+    .dl-date-input:focus{border-color:var(--red)}
+    /* custom deadlines add-form */
+    .dl-add-form{display:flex;gap:6px;padding:8px 10px;border-top:1px solid var(--border);flex-wrap:wrap}
+    .dl-add-form input,.dl-add-form select{flex:1;min-width:70px;padding:5px 8px;border:1px solid var(--border);border-radius:3px;background:white;color:var(--text);font-family:'Barlow',sans-serif;font-size:.82rem;outline:none}
+    .dl-add-form input:focus,.dl-add-form select:focus{border-color:var(--red)}
+    @media(max-width:860px){
+      main{grid-template-columns:1fr;padding:8px 8px 0}
+      .main-right{order:-1}
+      .km-bar{gap:8px;padding:7px 10px}
+      .bar-sep{display:none}
+      .km-stat .val{font-size:1.3rem}
+      .km-input-wrap input{width:80px}
+      header{padding:0 10px;gap:8px}
+      .hd-clock{display:none}
+      .chart-row{padding:0 8px 8px}
+      .eg{grid-template-columns:1fr 1fr}
+      table.st th:nth-child(3),table.st td:nth-child(3),
+      table.st th:nth-child(4),table.st td:nth-child(4){display:none}
+    }
+    @media(max-width:480px){
+      .km-bar{flex-direction:column;align-items:flex-start;gap:6px}
+      .km-input-wrap{width:100%}
+      .km-input-wrap input{flex:1;width:auto}
+      .hd-xcape{font-size:1.3rem}
+      .eg{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
 
 <!--
-  ══ SQL da eseguire su Supabase (aggiuntivo a km_log e maintenance_log) ══
+  ══ SQL SUPABASE — esegui nel SQL Editor ══
 
   CREATE TABLE schedule_done (
     id BIGSERIAL PRIMARY KEY, target_km INTEGER UNIQUE NOT NULL,
     km_done INTEGER, costo NUMERIC(10,2) DEFAULT 0, note TEXT,
     eseguito BOOLEAN DEFAULT FALSE, done_date DATE,
+    ops_checked TEXT DEFAULT '[]',
     updated_at TIMESTAMPTZ DEFAULT NOW()
   );
   CREATE TABLE periodic_state (
@@ -158,12 +209,26 @@
     id BIGSERIAL PRIMARY KEY, txt TEXT DEFAULT '',
     color TEXT DEFAULT '#FFF9C4', created_at TIMESTAMPTZ DEFAULT NOW()
   );
+  CREATE TABLE links (
+    id BIGSERIAL PRIMARY KEY, title TEXT NOT NULL,
+    url TEXT NOT NULL, created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+  CREATE TABLE deadlines (
+    id BIGSERIAL PRIMARY KEY, type_key TEXT UNIQUE NOT NULL,
+    expiry_date DATE, note TEXT
+  );
+
+  -- RLS (open per uso personale)
   ALTER TABLE schedule_done  ENABLE ROW LEVEL SECURITY;
   ALTER TABLE periodic_state ENABLE ROW LEVEL SECURITY;
   ALTER TABLE sticky_notes   ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE links          ENABLE ROW LEVEL SECURITY;
+  ALTER TABLE deadlines      ENABLE ROW LEVEL SECURITY;
   CREATE POLICY "open" ON schedule_done  FOR ALL USING (true) WITH CHECK (true);
   CREATE POLICY "open" ON periodic_state FOR ALL USING (true) WITH CHECK (true);
   CREATE POLICY "open" ON sticky_notes   FOR ALL USING (true) WITH CHECK (true);
+  CREATE POLICY "open" ON links          FOR ALL USING (true) WITH CHECK (true);
+  CREATE POLICY "open" ON deadlines      FOR ALL USING (true) WITH CHECK (true);
 -->
 
 <div id="cfg-banner">⚠️ Supabase non configurato — dati solo su questo browser. Imposta SUPABASE_URL e SUPABASE_ANON_KEY.</div>
@@ -174,10 +239,13 @@
   <div class="hd-sep"></div>
   <div class="hd-clock" id="clock">—</div>
   <div class="hd-spacer"></div>
-  <div class="hd-mm">
-    <img src="mm-logo.png" alt="MM"
-         onerror="this.style.display='none';document.getElementById('mm-fb').style.display='block'">
-    <span class="hd-mm-fb" id="mm-fb" style="display:none">MOTO MORINI</span>
+  <button class="hd-notif-btn" id="notif-btn" onclick="toggleNotifications()" title="Notifiche push">🔔</button>
+  <div class="hd-sep"></div>
+  <div class="hd-logo">
+    <img src="https://dealer.cdn.gestionaleauto.com/wp-content/uploads/sites/1573/2022/10/logo-trasparente.png"
+         alt="Moto Morini"
+         onerror="this.style.display='none'">
+    <span class="hd-logo-name">Moto Morini</span>
   </div>
 </header>
 
@@ -196,7 +264,7 @@
     <label>Nuovo KM</label>
     <input type="number" id="km-in" placeholder="0" min="0" step="1"
            onkeydown="if(event.key==='Enter'){saveKm();this.blur()}">
-    <span class="km-hint">↵ invio</span>
+    <span class="km-hint">↵</span>
   </div>
   <div class="bar-sep"></div>
   <div class="km-stat">
@@ -206,9 +274,9 @@
 </div>
 
 <main>
+  <!-- ── LEFT ── -->
   <div class="main-left">
 
-    <!-- CONTROLLI PERIODICI — sopra scadenziario -->
     <div class="card">
       <div class="ch"><h2>🔗 Controlli Periodici</h2></div>
       <div class="tbl-wrap">
@@ -218,15 +286,14 @@
             <th style="width:72px">Ogni</th>
             <th style="width:84px">Ultimo KM</th>
             <th style="width:84px">Prossimo</th>
-            <th style="width:78px">Stato</th>
-            <th style="width:72px"></th>
+            <th style="width:80px">Stato</th>
+            <th style="width:74px"></th>
           </tr></thead>
           <tbody id="periodic-body"></tbody>
         </table>
       </div>
     </div>
 
-    <!-- SCADENZIARIO — ordine 1k→48k, solo prossimo visibile -->
     <div class="card">
       <div class="ch">
         <h2>📋 Scadenziario</h2>
@@ -239,11 +306,11 @@
           <thead><tr>
             <th style="width:74px">KM</th>
             <th>Tagliando</th>
-            <th style="width:86px">KM Effettivi</th>
-            <th style="width:68px">Costo €</th>
+            <th style="width:88px">KM Effettivi</th>
+            <th style="width:70px">Costo €</th>
             <th style="width:42px;text-align:center" title="Eseguito">✓</th>
-            <th style="width:80px">Stato</th>
-            <th style="width:50px"></th>
+            <th style="width:82px">Stato</th>
+            <th style="width:52px"></th>
           </tr></thead>
           <tbody id="sched-body"></tbody>
         </table>
@@ -252,7 +319,19 @@
 
   </div>
 
+  <!-- ── RIGHT ── -->
   <div class="main-right">
+
+    <!-- Scadenze moto/doc -->
+    <div class="card">
+      <div class="ch">
+        <h2>📅 Scadenze</h2>
+        <button class="btn-circ btn" onclick="showAddDeadline()" title="Aggiungi scadenza custom">+</button>
+      </div>
+      <div id="deadline-container"></div>
+    </div>
+
+    <!-- Note post-it -->
     <div class="card">
       <div class="ch">
         <h2>📌 Note</h2>
@@ -262,10 +341,24 @@
         <div class="pe-empty" id="notes-empty">Premi + per aggiungere una nota</div>
       </div>
     </div>
+
+    <!-- Link utili -->
+    <div class="card">
+      <div class="ch"><h2>🔗 Link Utili</h2></div>
+      <div id="links-list" class="links-list">
+        <div class="link-empty" id="links-empty">Nessun link — aggiungine uno qui sotto</div>
+      </div>
+      <div class="link-add-form">
+        <input type="text"  id="link-title" placeholder="Titolo (es. Olio catena Amazon)">
+        <input type="url"   id="link-url"   placeholder="https://...">
+        <button class="btn btn-red btn-xs" onclick="addLink()">+ Add</button>
+      </div>
+    </div>
+
   </div>
 </main>
 
-<!-- GRAFICO — full width -->
+<!-- Grafico full width -->
 <div class="chart-row">
   <div class="card" style="margin-top:12px">
     <div class="ch">
@@ -274,21 +367,21 @@
     </div>
     <div class="cb" style="padding:10px 14px 14px">
       <canvas id="km-chart" height="70"></canvas>
-      <div id="chart-msg" style="display:none;text-align:center;color:var(--muted);font-size:.72rem;font-style:italic;padding:16px">
+      <div id="chart-msg" style="display:none;text-align:center;color:var(--muted);font-size:.8rem;font-style:italic;padding:18px">
         Serve almeno 2 rilevazioni per visualizzare il grafico
       </div>
     </div>
   </div>
 </div>
 
-<!-- MODAL -->
+<!-- Modal alert -->
 <div class="modal-ov" id="modal" style="display:none" onclick="if(event.target===this)closeModal()">
   <div class="modal-box">
     <div class="modal-h">🔔 Interventi Richiesti</div>
     <div class="modal-b" id="modal-body"></div>
     <div class="modal-f">
       <button class="btn btn-ghost btn-sm" onclick="closeModal()">Chiudi</button>
-      <button class="btn btn-red btn-sm" onclick="closeModal()">✓ Ho Capito</button>
+      <button class="btn btn-red btn-sm"   onclick="closeModal()">✓ Ho Capito</button>
     </div>
   </div>
 </div>
@@ -303,81 +396,364 @@ const SUPABASE_URL      = 'YOUR_SUPABASE_URL';
 const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
 
 /* ════════════════════════════════
-   DATI FISSI — Manuale Ed.2 2022
+   MILESTONES — Manuale Ed.2 2022
 ════════════════════════════════ */
 const MILESTONES = [
-  { km:1000,  label:'1° Tagliando (Rodaggio)',
-    ops:['Cambio olio motore','Filtro olio','Controllo acceleratore','Perdite carburante/refrigerante','Freni','Gioco sterzo','Serraggio bulloni'] },
-  { km:6000,  label:'Tagliando 6.000 km',
-    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Regime minimo','Frizione','Pressione pneumatici','Freni','Serraggio bulloni'] },
-  { km:12000, label:'Tagliando 12.000 km',
-    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Usura catena','Pastiglie freni','Forcella/ammortizzatore','Corpo farfalla','Elettrica','Serraggio bulloni'] },
-  { km:18000, label:'Tagliando 18.000 km',
-    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Regime minimo','Frizione','Pressione pneumatici','Freni','Serraggio bulloni'] },
-  { km:24000, label:'Tagliando 24.000 km',
-    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Liquido freni','Usura catena','Pastiglie freni','Gioco sterzo','Serraggio bulloni'] },
-  { km:30000, label:'Tagliando 30.000 km',
-    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Frizione','Pressione pneumatici','Freni','Serraggio bulloni'] },
-  { km:36000, label:'Tagliando 36.000 km',
-    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Sostituzione refrigerante','Sostituzione radiatore/tubazioni','Liquido freni','Cuscinetto sterzo','Serraggio bulloni'] },
-  { km:42000, label:'Tagliando 42.000 km',
-    ops:['Cambio olio motore','Filtro olio','Pulizia filtro aria','Regolazione giochi valvole','Serraggio bulloni'] },
-  { km:48000, label:'Tagliando 48.000 km',
-    ops:['Cambio olio motore','Filtro olio','Sostituzione filtro aria','Sostituzione candela','Sostituzione tubo carburante','Sostituzione tubo freni','Guarnizione pompa freni','Liquido freni','Cuscinetto sterzo','Serraggio bulloni'] },
+  { km:1000, label:'1° Tagliando (Rodaggio)', ops:[
+    'Sostituzione olio motore (primo cambio rodaggio)',
+    'Sostituzione filtro dell\'olio',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo installazione del tubo del carburante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni al radiatore e alle tubazioni',
+    'Controllo dell\'installazione del radiatore e delle tubazioni',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Controllo pressione pneumatici',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo del gioco dello sterzo',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:6000, label:'Tagliando 6.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Pulizia del filtro dell\'aria',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo installazione del tubo del carburante',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni al radiatore e alle tubazioni',
+    'Controllo dell\'installazione del radiatore e delle tubazioni',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Controllo pressione pneumatici',
+    'Lubrificazione pedale',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:12000, label:'Tagliando 12.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Sostituzione filtro dell\'aria',
+    'Sostituzione candela',
+    'Sostituzione blocco paracolpi sede ruota dentata',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Pulizia del corpo della valvola a farfalla',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo danni al tubo del carburante',
+    'Controllo installazione del tubo del carburante',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni al radiatore e alle tubazioni',
+    'Controllo dell\'installazione del radiatore e delle tubazioni',
+    'Controllo danni sistema aspirazione',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Verifica usura catena di trasmissione',
+    'Controllo stato di usura della protezione catena di trasmissione',
+    'Controllo pressione pneumatici',
+    'Controllo danni cerchio/pneumatico',
+    'Controllo usura superficie pneumatici e usura anomala',
+    'Controllo danni cuscinetto cerchi',
+    'Lubrificazione pedale',
+    'Controllo cuscinetto sede ruota dentata',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo forcella anteriore/ammortizzatore posteriore (ammortizzazione regolare)',
+    'Controllo perdita olio idraulico forcella anteriore/ammortizzatore posteriore',
+    'Controllo del gioco dello sterzo',
+    'Controllo funzionamento luci e interruttori',
+    'Controllo fari',
+    'Controllo interruttore consenso avviamento motore',
+    'Controllo funzionamento interruttore di spegnimento del motore',
+    'Lubrificazione parti del telaio',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:18000, label:'Tagliando 18.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Pulizia del filtro dell\'aria',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo installazione del tubo del carburante',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni al radiatore e alle tubazioni',
+    'Controllo dell\'installazione del radiatore e delle tubazioni',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Controllo pressione pneumatici',
+    'Lubrificazione pedale',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:24000, label:'Tagliando 24.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Sostituzione filtro dell\'aria',
+    'Sostituzione candela',
+    'Sostituzione blocco paracolpi sede ruota dentata',
+    'Sostituzione liquido freni (anteriore/posteriore)',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Pulizia del corpo della valvola a farfalla',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo danni al tubo del carburante',
+    'Controllo installazione del tubo del carburante',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni al radiatore e alle tubazioni',
+    'Controllo dell\'installazione del radiatore e delle tubazioni',
+    'Controllo danni sistema aspirazione',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Verifica usura catena di trasmissione',
+    'Controllo stato di usura della protezione catena di trasmissione',
+    'Controllo pressione pneumatici',
+    'Controllo danni cerchio/pneumatico',
+    'Controllo usura superficie pneumatici e usura anomala',
+    'Controllo danni cuscinetto cerchi',
+    'Lubrificazione pedale',
+    'Controllo cuscinetto sede ruota dentata',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo forcella anteriore/ammortizzatore posteriore (ammortizzazione regolare)',
+    'Controllo perdita olio idraulico forcella anteriore/ammortizzatore posteriore',
+    'Controllo del gioco dello sterzo',
+    'Lubrificazione cuscinetto dello sterzo',
+    'Controllo funzionamento luci e interruttori',
+    'Controllo fari',
+    'Controllo interruttore consenso avviamento motore',
+    'Controllo funzionamento interruttore di spegnimento del motore',
+    'Lubrificazione parti del telaio',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:30000, label:'Tagliando 30.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Pulizia del filtro dell\'aria',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo installazione del tubo del carburante',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni al radiatore e alle tubazioni',
+    'Controllo dell\'installazione del radiatore e delle tubazioni',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Controllo pressione pneumatici',
+    'Lubrificazione pedale',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:36000, label:'Tagliando 36.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Sostituzione filtro dell\'aria',
+    'Sostituzione candela',
+    'Sostituzione blocco paracolpi sede ruota dentata',
+    'Sostituzione refrigerante',
+    'Sostituzione radiatore, tubazione',
+    'Sostituzione liquido freni (anteriore/posteriore)',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Pulizia del corpo della valvola a farfalla',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo danni al tubo del carburante',
+    'Controllo installazione del tubo del carburante',
+    'Controllo danni sistema aspirazione',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Verifica usura catena di trasmissione',
+    'Controllo stato di usura della protezione catena di trasmissione',
+    'Controllo pressione pneumatici',
+    'Controllo danni cerchio/pneumatico',
+    'Controllo usura superficie pneumatici e usura anomala',
+    'Controllo danni cuscinetto cerchi',
+    'Lubrificazione pedale',
+    'Controllo cuscinetto sede ruota dentata',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo forcella anteriore/ammortizzatore posteriore (ammortizzazione regolare)',
+    'Controllo perdita olio idraulico forcella anteriore/ammortizzatore posteriore',
+    'Controllo del gioco dello sterzo',
+    'Lubrificazione cuscinetto dello sterzo',
+    'Controllo funzionamento luci e interruttori',
+    'Controllo fari',
+    'Controllo interruttore consenso avviamento motore',
+    'Controllo funzionamento interruttore di spegnimento del motore',
+    'Lubrificazione parti del telaio',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:42000, label:'Tagliando 42.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Pulizia del filtro dell\'aria',
+    'Controllo giochi valvole (42.000 km)',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Controllo perdita di carburante (tubo del carburante)',
+    'Controllo installazione del tubo del carburante',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Controllo pressione pneumatici',
+    'Controllo perdita liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
+  { km:48000, label:'Tagliando 48.000 km', ops:[
+    'Sostituzione olio motore',
+    'Sostituzione filtro dell\'olio',
+    'Sostituzione filtro dell\'aria',
+    'Sostituzione candela',
+    'Sostituzione blocco paracolpi sede ruota dentata',
+    'Sostituzione tubo del carburante (4 anni)',
+    'Sostituzione tubo del liquido freni (4 anni)',
+    'Sostituzione guarnizione in gomma della pompa dei freni (4 anni)',
+    'Sostituzione liquido freni (anteriore/posteriore)',
+    'Controllo sistema dell\'acceleratore (gioco, ritorno flessibile)',
+    'Controllo del regime minimo',
+    'Pulizia del corpo della valvola a farfalla',
+    'Controllo del volume di refrigerante',
+    'Controllo delle perdite di refrigerante',
+    'Controllo danni sistema aspirazione',
+    'Controllo del funzionamento della frizione (gioco, innesto, disinnesto)',
+    'Verifica usura catena di trasmissione',
+    'Controllo stato di usura della protezione catena di trasmissione',
+    'Controllo pressione pneumatici',
+    'Controllo danni cerchio/pneumatico',
+    'Controllo usura superficie pneumatici e usura anomala',
+    'Controllo danni cuscinetto cerchi',
+    'Lubrificazione pedale',
+    'Controllo cuscinetto sede ruota dentata',
+    'Controllo perdita liquido freni',
+    'Controllo danni tubo liquido freni',
+    'Ispezione usura pastiglie freni',
+    'Controllo installazione tubazione liquido freni',
+    'Controllo volume liquido freni',
+    'Controllo efficienza freni (forza frenante, gioco, elasticità)',
+    'Controllo funzionamento interruttore luce freni',
+    'Controllo forcella anteriore/ammortizzatore posteriore (ammortizzazione regolare)',
+    'Controllo perdita olio idraulico forcella anteriore/ammortizzatore posteriore',
+    'Controllo del gioco dello sterzo',
+    'Lubrificazione cuscinetto dello sterzo',
+    'Controllo funzionamento luci e interruttori',
+    'Controllo fari',
+    'Controllo interruttore consenso avviamento motore',
+    'Controllo funzionamento interruttore di spegnimento del motore',
+    'Lubrificazione parti del telaio',
+    'Controllo della coppia di bulloni e dadi',
+  ]},
 ];
 
-const PERIODIC = [
-  { key:'catena_lub',  label:'Lubrificazione catena',          interval:600,  icon:'🔗' },
-  { key:'catena_tens', label:'Regolazione tensione catena',    interval:1000, icon:'⚙️' },
-  { key:'pneumatici',  label:'Controllo pressione pneumatici', interval:3000, icon:'🔵' },
-  { key:'pastiglie',   label:'Ispezione pastiglie freni',      interval:6000, icon:'🔴' },
+const PERIODIC=[
+  {key:'catena_lub', label:'Lubrificazione catena di trasmissione',     interval:600,  icon:'🔗'},
+  {key:'catena_tens',label:'Controllo della tensione della catena',      interval:1000, icon:'⚙️'},
+  {key:'pneumatici', label:'Controllo pressione pneumatici',             interval:3000, icon:'🔵'},
+  {key:'pastiglie',  label:'Ispezione usura pastiglie freni',            interval:6000, icon:'🔴'},
 ];
 
-const NOTE_COLORS = ['#FFF9C4','#FCE4EC','#DCEDC8','#B3E5FC','#FFE0B2'];
+const DEADLINES_DEF=[
+  {key:'patente',   label:'Patente',   icon:'🪪', type:'date'},
+  {key:'revisione', label:'Revisione', icon:'🔍', type:'date'},
+  {key:'bollo',     label:'Bollo',     icon:'📄', type:'date'},
+];
+
+const NOTE_COLORS=['#FFF9C4','#FCE4EC','#DCEDC8','#B3E5FC','#FFE0B2'];
 
 /* ════════════════════════════════
    STATO
 ════════════════════════════════ */
-let sb=null, currentKm=0;
-let kmHistory=[], schedDone={}, periodicSt={}, notes=[];
-let editMile=null, editPer=null, showAllMiles=false;
-let kmChart=null, chartFilter={type:'all',value:null};
+let sb=null,currentKm=0;
+let kmHistory=[],schedDone={},periodicSt={},notes=[],links=[],deadlines={},customDeadlines=[];
+let editMile=null,editPer=null,showAllMiles=false;
+let kmChart=null,chartFilter={type:'all',value:null};
+let notifEnabled=false;
 
 /* ════════════════════════════════
    INIT
 ════════════════════════════════ */
-async function init() {
+async function init(){
   startClock();
+  initNotifBtn();
   if(SUPABASE_URL==='YOUR_SUPABASE_URL'){
     document.getElementById('cfg-banner').style.display='block';
-    loadLocal(); return;
+    loadLocal();return;
   }
-  try {
+  try{
     sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
     await loadSB();
-  } catch(e){ console.error(e); toast('Errore Supabase → localStorage','err'); loadLocal(); }
+  }catch(e){console.error(e);toast('Errore Supabase → localStorage','err');loadLocal();}
 }
 
 function loadLocal(){
-  kmHistory  =JSON.parse(localStorage.getItem('xc_km')||'[]');
-  schedDone  =JSON.parse(localStorage.getItem('xc_sd')||'{}');
-  periodicSt =JSON.parse(localStorage.getItem('xc_ps')||'{}');
-  notes      =JSON.parse(localStorage.getItem('xc_nt')||'[]');
-  currentKm  =kmHistory.length?kmHistory.at(-1).km:0;
+  kmHistory       =JSON.parse(localStorage.getItem('xc_km')||'[]');
+  schedDone       =JSON.parse(localStorage.getItem('xc_sd')||'{}');
+  periodicSt      =JSON.parse(localStorage.getItem('xc_ps')||'{}');
+  notes           =JSON.parse(localStorage.getItem('xc_nt')||'[]');
+  links           =JSON.parse(localStorage.getItem('xc_lk')||'[]');
+  deadlines       =JSON.parse(localStorage.getItem('xc_dl')||'{}');
+  customDeadlines =JSON.parse(localStorage.getItem('xc_cd')||'[]');
+  currentKm       =kmHistory.length?kmHistory.at(-1).km:0;
   render();
 }
 async function loadSB(){
-  const [r1,r2,r3,r4]=await Promise.all([
+  const [r1,r2,r3,r4,r5,r6]=await Promise.all([
     sb.from('km_log').select('*').order('recorded_at',{ascending:true}),
     sb.from('schedule_done').select('*'),
     sb.from('periodic_state').select('*'),
     sb.from('sticky_notes').select('*').order('created_at',{ascending:true}),
+    sb.from('links').select('*').order('created_at',{ascending:true}),
+    sb.from('deadlines').select('*'),
   ]);
-  [r1,r2,r3,r4].forEach(r=>{if(r.error)throw r.error});
+  [r1,r2,r3,r4,r5,r6].forEach(r=>{if(r.error)throw r.error});
   kmHistory  =r1.data||[];
   schedDone  =Object.fromEntries((r2.data||[]).map(r=>[r.target_km,r]));
   periodicSt =Object.fromEntries((r3.data||[]).map(r=>[r.type_key,r]));
   notes      =r4.data||[];
+  links      =r5.data||[];
+  deadlines  =Object.fromEntries((r6.data||[]).map(r=>[r.type_key,r]));
   currentKm  =kmHistory.length?kmHistory.at(-1).km:0;
   render();
 }
@@ -386,48 +762,86 @@ function saveLocal(){
   localStorage.setItem('xc_sd',JSON.stringify(schedDone));
   localStorage.setItem('xc_ps',JSON.stringify(periodicSt));
   localStorage.setItem('xc_nt',JSON.stringify(notes));
+  localStorage.setItem('xc_lk',JSON.stringify(links));
+  localStorage.setItem('xc_dl',JSON.stringify(deadlines));
+  localStorage.setItem('xc_cd',JSON.stringify(customDeadlines));
 }
-function render(){ updateHeader(); renderSchedule(); renderPeriodic(); renderNotes(); buildChartFilters(); renderChart(); }
+function render(){updateHeader();renderSchedule();renderPeriodic();renderDeadlines();renderNotes();renderLinks();buildChartFilters();renderChart();}
+
+/* ════════════════════════════════
+   PUSH NOTIFICATIONS
+════════════════════════════════ */
+function initNotifBtn(){
+  const perm=Notification.permission;
+  notifEnabled=(perm==='granted');
+  document.getElementById('notif-btn').classList.toggle('active',notifEnabled);
+}
+async function toggleNotifications(){
+  if(!('Notification' in window)){toast('Browser non supporta notifiche','err');return;}
+  if(Notification.permission==='denied'){toast('Notifiche bloccate — sblocca dalle impostazioni browser','err');return;}
+  if(Notification.permission==='default'){
+    const p=await Notification.requestPermission();
+    notifEnabled=(p==='granted');
+  } else {
+    notifEnabled=!notifEnabled;
+  }
+  document.getElementById('notif-btn').classList.toggle('active',notifEnabled);
+  if(notifEnabled){
+    toast('🔔 Notifiche attivate','ok');
+    sendPushIfNeeded();
+  } else {
+    toast('Notifiche disattivate','ok');
+  }
+}
+function sendPushIfNeeded(){
+  if(!notifEnabled||Notification.permission!=='granted') return;
+  const alerts=buildAlertsList();
+  if(!alerts.length) return;
+  const body=alerts.slice(0,3).map(a=>a.label).join('\n')+(alerts.length>3?`\n+${alerts.length-3} altri`:'');
+  try{
+    new Notification('🏍️ X-Cape 650 — Interventi Richiesti',{body,icon:'https://dealer.cdn.gestionaleauto.com/wp-content/uploads/sites/1573/2022/10/logo-trasparente.png'});
+  }catch(e){console.warn('Push notification failed',e);}
+}
 
 /* ════════════════════════════════
    SAVE KM
 ════════════════════════════════ */
 async function saveKm(){
   const v=parseInt(document.getElementById('km-in').value);
-  if(!v||isNaN(v)||v<=0) return toast('Km non validi','err');
-  if(v<currentKm) return toast(`Valore < attuali (${currentKm.toLocaleString('it')} km)`,'err');
+  if(!v||isNaN(v)||v<=0)return toast('Km non validi','err');
+  if(v<currentKm)return toast(`Valore < attuali (${currentKm.toLocaleString('it')} km)`,'err');
   if(sb){
-    const {data,error}=await sb.from('km_log').insert([{km:v}]).select().single();
-    if(error) return toast('Errore Supabase','err');
+    const{data,error}=await sb.from('km_log').insert([{km:v}]).select().single();
+    if(error)return toast('Errore Supabase','err');
     kmHistory.push(data);
-  } else {
-    kmHistory.push({id:Date.now(),km:v,recorded_at:new Date().toISOString()});
-  }
+  }else{kmHistory.push({id:Date.now(),km:v,recorded_at:new Date().toISOString()});}
   currentKm=v;
   document.getElementById('km-in').value='';
-  saveLocal(); render();
+  saveLocal();render();
   toast(`✅ ${v.toLocaleString('it')} km salvati`,'ok');
-  setTimeout(checkAlerts,400);
+  setTimeout(()=>{checkAlerts();sendPushIfNeeded();},400);
 }
 
 /* ════════════════════════════════
    SCHEDULE CRUD
 ════════════════════════════════ */
 async function saveMilestone(tkm){
-  const w=document.getElementById(`se-${tkm}`); if(!w) return;
+  const w=document.getElementById(`se-${tkm}`);if(!w)return;
+  const checked=[...w.querySelectorAll('.op-chk')].filter(c=>c.checked).map(c=>+c.dataset.idx);
   const upd={target_km:tkm,
-    km_done:   parseInt(w.querySelector('.se-km').value)||null,
-    costo:     parseFloat(w.querySelector('.se-costo').value)||0,
-    note:      w.querySelector('.se-note').value.trim(),
-    eseguito:  w.querySelector('.se-done').checked,
-    done_date: w.querySelector('.se-date').value||null,
-    updated_at:new Date().toISOString()};
+    km_done:     parseInt(w.querySelector('.se-km').value)||null,
+    costo:       parseFloat(w.querySelector('.se-costo').value)||0,
+    note:        w.querySelector('.se-note').value.trim(),
+    eseguito:    w.querySelector('.se-done').checked,
+    done_date:   w.querySelector('.se-date').value||null,
+    ops_checked: JSON.stringify(checked),
+    updated_at:  new Date().toISOString()};
   if(sb){
     if(schedDone[tkm]?.id){const{error}=await sb.from('schedule_done').update(upd).eq('id',schedDone[tkm].id);if(error)return toast('Errore','err');}
     else{const{data,error}=await sb.from('schedule_done').insert([upd]).select().single();if(error)return toast('Errore','err');upd.id=data.id;}
-  } else { upd.id=schedDone[tkm]?.id||Date.now(); }
-  schedDone[tkm]=upd; editMile=null;
-  saveLocal(); renderSchedule(); updateHeader(); toast('✅ Tagliando salvato','ok');
+  }else{upd.id=schedDone[tkm]?.id||Date.now();}
+  schedDone[tkm]=upd;editMile=null;
+  saveLocal();renderSchedule();updateHeader();toast('✅ Tagliando salvato','ok');
 }
 async function quickToggle(tkm,checked){
   const ex=schedDone[tkm]||{};
@@ -437,16 +851,27 @@ async function quickToggle(tkm,checked){
   if(sb){
     if(ex.id){await sb.from('schedule_done').update(upd).eq('id',ex.id);}
     else{const{data}=await sb.from('schedule_done').insert([upd]).select().single();upd.id=data?.id;}
-  } else { upd.id=ex.id||Date.now(); }
-  schedDone[tkm]=upd; saveLocal(); renderSchedule(); updateHeader();
+  }else{upd.id=ex.id||Date.now();}
+  schedDone[tkm]=upd;saveLocal();renderSchedule();updateHeader();
 }
-function toggleEditMile(km){ editMile=(editMile===km)?null:km; renderSchedule(); }
+function toggleEditMile(km){editMile=(editMile===km)?null:km;renderSchedule();}
+function toggleAllMiles(){
+  showAllMiles=!showAllMiles;
+  document.getElementById('sched-toggle-btn').textContent=showAllMiles?'▲ Nascondi':'▼ Mostra tutti';
+  renderSchedule();
+}
+function toggleAllOps(tkm,state){
+  document.querySelectorAll(`#se-${tkm} .op-chk`).forEach(cb=>{
+    cb.checked=state;
+    cb.closest('label').querySelector('.op-lbl').style.cssText=state?'text-decoration:line-through;color:var(--muted)':'';
+  });
+}
 
 /* ════════════════════════════════
    PERIODIC CRUD
 ════════════════════════════════ */
 async function savePeriodic(key){
-  const w=document.getElementById(`pe-${key}`); if(!w) return;
+  const w=document.getElementById(`pe-${key}`);if(!w)return;
   const upd={type_key:key,
     last_km:  parseInt(w.querySelector('.pe-km').value)||currentKm,
     costo:    parseFloat(w.querySelector('.pe-costo').value)||0,
@@ -455,11 +880,24 @@ async function savePeriodic(key){
   if(sb){
     if(periodicSt[key]?.id){const{error}=await sb.from('periodic_state').update(upd).eq('id',periodicSt[key].id);if(error)return toast('Errore','err');}
     else{const{data,error}=await sb.from('periodic_state').insert([upd]).select().single();if(error)return toast('Errore','err');upd.id=data.id;}
-  } else { upd.id=periodicSt[key]?.id||Date.now(); }
-  periodicSt[key]=upd; editPer=null;
-  saveLocal(); renderPeriodic(); updateHeader(); toast('✅ Controllo registrato','ok');
+  }else{upd.id=periodicSt[key]?.id||Date.now();}
+  periodicSt[key]=upd;editPer=null;
+  saveLocal();renderPeriodic();updateHeader();toast('✅ Controllo registrato','ok');
 }
-function toggleEditPer(key){ editPer=(editPer===key)?null:key; renderPeriodic(); }
+function toggleEditPer(key){editPer=(editPer===key)?null:key;renderPeriodic();}
+
+/* ════════════════════════════════
+   DEADLINES CRUD
+════════════════════════════════ */
+async function saveDeadline(key,date){
+  const ex=deadlines[key]||{};
+  const upd={type_key:key,expiry_date:date||null};
+  if(sb){
+    if(ex.id){await sb.from('deadlines').update(upd).eq('id',ex.id);}
+    else{const{data,error}=await sb.from('deadlines').insert([upd]).select().single();if(error)return toast('Errore','err');upd.id=data.id;}
+  }else{upd.id=ex.id||Date.now();}
+  deadlines[key]=upd;saveLocal();renderDeadlines();toast('✅ Scadenza salvata','ok');
+}
 
 /* ════════════════════════════════
    NOTES CRUD
@@ -468,7 +906,7 @@ async function addNote(){
   const n={txt:'',color:NOTE_COLORS[0],created_at:new Date().toISOString()};
   if(sb){const{data,error}=await sb.from('sticky_notes').insert([n]).select().single();if(error)return toast('Errore','err');n.id=data.id;}
   else{n.id=Date.now();}
-  notes.push(n); saveLocal(); renderNotes();
+  notes.push(n);saveLocal();renderNotes();
   setTimeout(()=>{const ta=document.querySelector(`#note-${n.id} textarea`);if(ta)ta.focus();},50);
 }
 async function updateNoteText(id,txt){
@@ -485,6 +923,28 @@ async function deleteNote(id){
   notes=notes.filter(n=>n.id!==id);
   if(sb)await sb.from('sticky_notes').delete().eq('id',id);
   saveLocal();renderNotes();
+}
+
+/* ════════════════════════════════
+   LINKS CRUD
+════════════════════════════════ */
+async function addLink(){
+  const title=document.getElementById('link-title').value.trim();
+  const url  =document.getElementById('link-url').value.trim();
+  if(!title||!url)return toast('Titolo e URL obbligatori','err');
+  if(!/^https?:\/\//i.test(url))return toast('URL deve iniziare con https://','err');
+  const n={title,url,created_at:new Date().toISOString()};
+  if(sb){const{data,error}=await sb.from('links').insert([n]).select().single();if(error)return toast('Errore','err');n.id=data.id;}
+  else{n.id=Date.now();}
+  links.push(n);
+  document.getElementById('link-title').value='';
+  document.getElementById('link-url').value='';
+  saveLocal();renderLinks();toast('✅ Link aggiunto','ok');
+}
+async function deleteLink(id){
+  links=links.filter(l=>l.id!==id);
+  if(sb)await sb.from('links').delete().eq('id',id);
+  saveLocal();renderLinks();
 }
 
 /* ════════════════════════════════
@@ -508,9 +968,8 @@ function updateHeader(){
   const de=document.getElementById('hd-delta');
   if(kmHistory.length>=2){
     const delta=currentKm-kmHistory[kmHistory.length-2].km;
-    de.textContent=`+${delta.toLocaleString('it')} km`;
-    de.className='val neutral';
-  } else { de.textContent='—'; de.className='val neutral'; }
+    de.textContent=`+${delta.toLocaleString('it')} km`;de.className='val neutral';
+  }else{de.textContent='—';de.className='val neutral';}
   const next=getNextServiceKm();
   const el=document.getElementById('hd-next');
   if(!next){el.textContent='—';el.className='val';return;}
@@ -520,43 +979,30 @@ function updateHeader(){
 }
 
 /* ════════════════════════════════
-   SCADENZIARIO (1k→48k, solo prossimo)
+   RENDER — SCADENZIARIO
 ════════════════════════════════ */
-function toggleAllMiles(){
-  showAllMiles=!showAllMiles;
-  document.getElementById('sched-toggle-btn').textContent=
-    showAllMiles?'▲ Nascondi':'▼ Mostra tutti';
-  renderSchedule();
-}
 function renderSchedule(){
-  const tbody=document.getElementById('sched-body');
-  tbody.innerHTML='';
+  const tbody=document.getElementById('sched-body');tbody.innerHTML='';
   const sorted=[...MILESTONES].sort((a,b)=>a.km-b.km);
   const nextIdx=sorted.findIndex(m=>!schedDone[m.km]?.eseguito);
-
   sorted.forEach((m,i)=>{
-    const d=schedDone[m.km]||{};
-    const done=!!d.eseguito;
-    const isNext=(i===nextIdx);
+    const d=schedDone[m.km]||{};const done=!!d.eseguito;const isNext=(i===nextIdx);
     const diff=currentKm-m.km;
-    // visibilità: prossimo sempre, scaduti non fatti sempre, il resto solo se showAll
     const visible=showAllMiles||isNext||(!done&&diff>0);
     if(!visible)return;
-
     let bc,bt;
     if(done){bc='s-done';bt='✓ FATTO';}
     else if(diff>500){bc='s-over';bt='SCADUTO';}
     else if(diff>=0){bc='s-near';bt='DA FARE';}
     else if(diff>-800){bc='s-near';bt='PRESTO';}
     else{bc='s-future';bt=(m.km-currentKm).toLocaleString('it')+' km';}
-
     const tr=document.createElement('tr');
     if(done)tr.className='done-row';
     tr.innerHTML=`
       <td><span class="km-tag">${m.km.toLocaleString('it')}</span></td>
-      <td ${(!done&&isNext)?'style="background:#FFFDE7"':''}>
-        <div class="mile-lbl">${done?`<s style="opacity:.4">${esc(m.label)}</s>`:esc(m.label)}
-          ${isNext&&!done?' <span style="color:var(--red);font-size:.62rem;font-weight:800">◀ PROSSIMO</span>':''}
+      <td ${(!done&&isNext)?'style="background:rgba(255,85,0,.04)"':''}>
+        <div class="mile-lbl">${done?`<s style="opacity:.35">${esc(m.label)}</s>`:esc(m.label)}
+          ${isNext&&!done?' <span style="color:var(--orange);font-size:.65rem;font-weight:800">◀ PROSSIMO</span>':''}
         </div>
         <div class="mile-ops">${m.ops.slice(0,3).join(', ')}${m.ops.length>3?'…':''}</div>
       </td>
@@ -568,16 +1014,31 @@ function renderSchedule(){
     tbody.appendChild(tr);
 
     if(editMile===m.km){
-      const er=document.createElement('tr');
-      er.className='sub-row-edit';
+      const savedChecks=JSON.parse(d.ops_checked||'[]');
+      const clHtml=m.ops.map((op,idx)=>{
+        const chk=savedChecks.includes(idx)?'checked':'';
+        return `<label style="display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:.875rem">
+          <input type="checkbox" class="op-chk" data-idx="${idx}" ${chk}
+                 style="width:15px;height:15px;accent-color:var(--green);cursor:pointer;flex-shrink:0">
+          <span class="op-lbl" style="${chk?'text-decoration:line-through;color:var(--muted)':''}">${esc(op)}</span>
+        </label>`;
+      }).join('');
+      const er=document.createElement('tr');er.className='sub-row-edit';
       er.innerHTML=`<td colspan="7">
         <div id="se-${m.km}" class="eg">
           <div class="ef"><label>KM Effettivi</label><input type="number" class="se-km" value="${d.km_done||''}" placeholder="${currentKm}"></div>
           <div class="ef"><label>Data Intervento</label><input type="date" class="se-date" value="${d.done_date||today()}"></div>
           <div class="ef"><label>Costo €</label><input type="number" class="se-costo" value="${d.costo||''}" step="0.01" min="0"></div>
-          <div class="ef full"><label>Note (officina, ricambi, osservazioni…)</label><textarea class="se-note" rows="3">${esc(d.note||'')}</textarea></div>
-          <div class="ef" style="display:flex;align-items:center;gap:6px">
-            <input type="checkbox" class="se-done" ${done?'checked':''}><span style="font-size:.8rem;font-weight:600">Eseguito</span>
+          <div class="ef full" style="margin-top:4px">
+            <label style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px">
+              <span>Operazioni previste (${m.ops.length})</span>
+              <button type="button" class="btn btn-ghost btn-xs" onclick="toggleAllOps(${m.km},true)">✓ Tutte</button>
+            </label>
+            <div style="background:#111;border:1px solid var(--border);border-radius:4px;padding:4px 11px;max-height:240px;overflow-y:auto">${clHtml}</div>
+          </div>
+          <div class="ef full"><label>Note</label><textarea class="se-note" rows="3">${esc(d.note||'')}</textarea></div>
+          <div class="ef" style="display:flex;align-items:center;gap:7px">
+            <input type="checkbox" class="se-done" ${done?'checked':''}><span style="font-size:.875rem;font-weight:600">Eseguito</span>
           </div>
           <div class="ef-actions">
             <button class="btn btn-ghost btn-sm" onclick="toggleEditMile(${m.km})">Annulla</button>
@@ -585,16 +1046,21 @@ function renderSchedule(){
           </div>
         </div></td>`;
       tbody.appendChild(er);
+      er.querySelectorAll('.op-chk').forEach(cb=>{
+        cb.addEventListener('change',function(){
+          this.closest('label').querySelector('.op-lbl').style.cssText=
+            this.checked?'text-decoration:line-through;color:var(--muted)':'';
+        });
+      });
     }
   });
 }
 
 /* ════════════════════════════════
-   CONTROLLI PERIODICI
+   RENDER — PERIODICI
 ════════════════════════════════ */
 function renderPeriodic(){
-  const tbody=document.getElementById('periodic-body');
-  tbody.innerHTML='';
+  const tbody=document.getElementById('periodic-body');tbody.innerHTML='';
   PERIODIC.forEach(pt=>{
     const s=periodicSt[pt.key]||{};
     const last=s.last_km||0;
@@ -605,21 +1071,19 @@ function renderPeriodic(){
     else if(diff>=0){bc='s-near';bt='DA FARE';}
     else if(diff>-pt.interval*.25){bc='s-near';bt='PRESTO';}
     else{bc='s-future';bt=(next-currentKm).toLocaleString('it')+' km';}
-
     const tr=document.createElement('tr');
     if(diff>=0)tr.className='over-row';
     tr.innerHTML=`
-      <td>${pt.icon} <strong>${esc(pt.label)}</strong>${s.note?`<div style="font-size:.68rem;color:var(--muted);font-style:italic">${esc(s.note)}</div>`:''}</td>
+      <td>${pt.icon} <strong>${esc(pt.label)}</strong>${s.note?`<div style="font-size:.75rem;color:var(--muted);font-style:italic">${esc(s.note)}</div>`:''}</td>
       <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">ogni ${pt.interval.toLocaleString('it')}</td>
-      <td style="font-family:'Barlow Condensed',sans-serif">${last?last.toLocaleString('it')+(s.last_date?`<br><span style="font-size:.65rem;color:var(--muted)">${s.last_date}</span>`:''):'—'}</td>
+      <td style="font-family:'Barlow Condensed',sans-serif">${last?last.toLocaleString('it')+(s.last_date?`<br><span style="font-size:.7rem;color:var(--muted)">${s.last_date}</span>`:''):'—'}</td>
       <td style="font-family:'Barlow Condensed',sans-serif;font-weight:700">${next.toLocaleString('it')}</td>
       <td><span class="sb ${bc}">${bt}</span></td>
       <td><button class="btn btn-edit btn-xs" onclick="toggleEditPer('${pt.key}')">${editPer===pt.key?'✕':'Registra'}</button></td>`;
     tbody.appendChild(tr);
-
     if(editPer===pt.key){
       const er=document.createElement('tr');
-      er.innerHTML=`<td colspan="6" style="background:#F8FFF8;padding:10px 14px;border-bottom:2px solid var(--green)">
+      er.innerHTML=`<td colspan="6" style="background:#F8FFF8;padding:11px 15px;border-bottom:2px solid var(--green)">
         <div id="pe-${pt.key}" class="eg">
           <div class="ef"><label>KM Eseguito</label><input type="number" class="pe-km" value="${currentKm||last}"></div>
           <div class="ef"><label>Data</label><input type="date" class="pe-date" value="${today()}"></div>
@@ -636,19 +1100,183 @@ function renderPeriodic(){
 }
 
 /* ════════════════════════════════
-   POST-ITS
+   DEADLINES — custom add/edit/delete
+════════════════════════════════ */
+function showAddDeadline(){
+  const c=document.getElementById('deadline-container');
+  if(c.querySelector('#dl-add-panel')){c.querySelector('#dl-add-panel').remove();return;}
+  c.insertAdjacentHTML('beforeend',`
+    <div id="dl-add-panel" style="padding:11px 13px;background:var(--surface2);border-top:1px solid var(--border)">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:.62rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Nuova Scadenza</div>
+      <div style="display:flex;flex-direction:column;gap:7px">
+        <input id="dca-label" placeholder="Nome (es. Cambio pneumatici)"
+               style="padding:6px 9px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;width:100%;background:white">
+        <div style="display:flex;gap:7px;flex-wrap:wrap">
+          <select id="dca-type" onchange="toggleDlType()"
+                  style="flex:1;min-width:100px;padding:6px 9px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;background:white;outline:none">
+            <option value="km">Per KM</option>
+            <option value="date">Per Data</option>
+          </select>
+          <input id="dca-km" type="number" placeholder="KM scadenza"
+                 style="flex:1;min-width:100px;padding:6px 9px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;background:white">
+          <input id="dca-date" type="date"
+                 style="flex:1;min-width:110px;padding:6px 9px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;display:none;background:white">
+        </div>
+        <div style="display:flex;gap:7px;justify-content:flex-end">
+          <button class="btn btn-ghost btn-xs" onclick="document.getElementById('dl-add-panel').remove()">Annulla</button>
+          <button class="btn btn-red btn-xs" onclick="addCustomDeadline()">+ Aggiungi</button>
+        </div>
+      </div>
+    </div>`);
+}
+
+function toggleDlType(){
+  const t=document.getElementById('dca-type').value;
+  document.getElementById('dca-km').style.display   = t==='km'?'':'none';
+  document.getElementById('dca-date').style.display  = t==='date'?'':'none';
+}
+
+function addCustomDeadline(){
+  const label=document.getElementById('dca-label').value.trim();
+  const type =document.getElementById('dca-type').value;
+  const km   =parseInt(document.getElementById('dca-km').value)||null;
+  const date =document.getElementById('dca-date').value||null;
+  if(!label) return toast('Inserisci un nome','err');
+  if(type==='km'&&!km)   return toast('Inserisci i KM','err');
+  if(type==='date'&&!date) return toast('Inserisci la data','err');
+  customDeadlines.push({id:Date.now(),label,icon:'📌',type,km,date});
+  saveLocal();
+  document.getElementById('dl-add-panel')?.remove();
+  renderDeadlines(); toast('✅ Scadenza aggiunta','ok');
+}
+
+function deleteCustomDeadline(id){
+  customDeadlines=customDeadlines.filter(d=>d.id!==id);
+  saveLocal(); renderDeadlines();
+}
+
+function editCustomDeadline(id){
+  const d=customDeadlines.find(d=>d.id===id); if(!d) return;
+  const row=document.getElementById(`cdl-${id}`); if(!row) return;
+  row.innerHTML=`
+    <div style="display:flex;gap:7px;flex-wrap:wrap;align-items:center;padding:8px 13px;background:var(--surface2);border-bottom:1px solid var(--border)">
+      <input value="${esc(d.label)}" id="cde-label-${id}"
+             style="flex:2;min-width:100px;padding:5px 8px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;background:white">
+      ${d.type==='km'
+        ? `<input type="number" value="${d.km||''}" id="cde-val-${id}" placeholder="KM"
+                  style="flex:1;min-width:80px;padding:5px 8px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;background:white">`
+        : `<input type="date"   value="${d.date||''}" id="cde-val-${id}"
+                  style="flex:1;min-width:110px;padding:5px 8px;border:1px solid var(--border);border-radius:3px;font-family:'Barlow',sans-serif;font-size:.875rem;outline:none;background:white">`
+      }
+      <button class="btn btn-green btn-xs" onclick="saveCustomDeadline(${id})">✔</button>
+      <button class="btn btn-ghost btn-xs" onclick="renderDeadlines()">✕</button>
+    </div>`;
+}
+
+function saveCustomDeadline(id){
+  const d=customDeadlines.find(d=>d.id===id); if(!d) return;
+  d.label=document.getElementById(`cde-label-${id}`).value.trim()||d.label;
+  const val=document.getElementById(`cde-val-${id}`).value;
+  if(d.type==='km') d.km=parseInt(val)||d.km;
+  else d.date=val||d.date;
+  saveLocal(); renderDeadlines(); toast('✅ Aggiornato','ok');
+}
+
+/* ════════════════════════════════
+   RENDER — SCADENZE (card list, responsive)
+════════════════════════════════ */
+function renderDeadlines(){
+  const c=document.getElementById('deadline-container');
+  // preserva pannello aggiunta se aperto
+  const addPanel=c.querySelector('#dl-add-panel');
+  c.innerHTML='';
+
+  const today_=today();
+
+  // Scadenze fisse
+  DEADLINES_DEF.forEach(def=>{
+    const d=deadlines[def.key]||{};
+    const exp=d.expiry_date||'';
+    let bc='s-future',bt='',rowBg='';
+    if(exp){
+      const days=Math.round((new Date(exp)-new Date(today_))/(86400000));
+      if(days<0)  {bc='s-over';bt=`${Math.abs(days)}gg fa`;rowBg='background:#FFF0F0';}
+      else if(days<30){bc='s-near';bt=`${days}gg`;rowBg='background:#FFFBF0';}
+      else        {bc='s-done';bt=`${days}gg`;}
+    }
+    c.insertAdjacentHTML('beforeend',`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 13px;border-bottom:1px solid var(--border);${rowBg};flex-wrap:wrap;min-width:0">
+        <span style="flex-shrink:0">${def.icon}</span>
+        <span style="font-weight:600;font-size:.875rem;flex:1;min-width:60px">${def.label}</span>
+        <input type="date" value="${exp}" onchange="saveDeadline('${def.key}',this.value)"
+               style="flex-shrink:0;padding:4px 7px;border:1px solid var(--border);border-radius:3px;background:white;font-family:'Barlow',sans-serif;font-size:.82rem;outline:none;max-width:150px;width:100%">
+        ${bt?`<span class="sb ${bc}" style="flex-shrink:0">${bt}</span>`:''}
+      </div>`);
+  });
+
+  // Scadenze custom
+  customDeadlines.forEach(d=>{
+    let bc='s-future',bt='',rowBg='';
+    if(d.type==='km'&&d.km){
+      const diff=currentKm-d.km;
+      if(diff>=0)           {bc='s-over';bt=`+${diff.toLocaleString('it')} km`;rowBg='background:#FFF0F0';}
+      else if(d.km-currentKm<500){bc='s-near';bt=`${(d.km-currentKm).toLocaleString('it')} km`;rowBg='background:#FFFBF0';}
+      else                  {bc='s-future';bt=`${(d.km-currentKm).toLocaleString('it')} km`;}
+    } else if(d.type==='date'&&d.date){
+      const days=Math.round((new Date(d.date)-new Date(today_))/(86400000));
+      if(days<0)  {bc='s-over';bt=`${Math.abs(days)}gg fa`;rowBg='background:#FFF0F0';}
+      else if(days<30){bc='s-near';bt=`${days}gg`;rowBg='background:#FFFBF0';}
+      else        {bc='s-done';bt=`${days}gg`;}
+    }
+    const sub=d.type==='km'?`@ ${d.km?.toLocaleString('it')} km`:d.date||'';
+    c.insertAdjacentHTML('beforeend',`
+      <div id="cdl-${d.id}" style="display:flex;align-items:center;gap:8px;padding:8px 13px;border-bottom:1px solid var(--border);${rowBg};flex-wrap:wrap;min-width:0">
+        <span style="flex-shrink:0">${d.icon}</span>
+        <span style="font-weight:600;font-size:.875rem;flex:1;min-width:60px">${esc(d.label)}</span>
+        <span style="font-family:'Barlow Condensed',sans-serif;font-size:.78rem;color:var(--muted);flex-shrink:0">${sub}</span>
+        ${bt?`<span class="sb ${bc}" style="flex-shrink:0">${bt}</span>`:''}
+        <div style="display:flex;gap:4px;flex-shrink:0;margin-left:auto">
+          <button class="btn btn-edit btn-xs" onclick="editCustomDeadline(${d.id})">✎</button>
+          <button class="btn btn-ghost btn-xs" onclick="deleteCustomDeadline(${d.id})">✕</button>
+        </div>
+      </div>`);
+  });
+
+  if(addPanel) c.appendChild(addPanel);
+}
+
+/* ════════════════════════════════
+   RENDER — POST-ITS
 ════════════════════════════════ */
 function renderNotes(){
   const c=document.getElementById('notes-container');
   c.querySelectorAll('.postit').forEach(el=>el.remove());
   document.getElementById('notes-empty').style.display=notes.length?'none':'block';
   notes.forEach(n=>{
-    const div=document.createElement('div');
-    div.className='postit';div.id=`note-${n.id}`;div.style.background=n.color;
+    const div=document.createElement('div');div.className='postit';div.id=`note-${n.id}`;div.style.background=n.color;
     const dots=NOTE_COLORS.map(col=>`<span class="cdot ${col===n.color?'active':''}" style="background:${col}" onclick="updateNoteColor(${n.id},'${col}')"></span>`).join('');
     div.innerHTML=`<textarea class="postit-text" placeholder="Scrivi una nota…" onblur="updateNoteText(${n.id},this.value)">${esc(n.txt)}</textarea>
       <div class="pf"><div class="cdots">${dots}</div><button class="pdel" onclick="deleteNote(${n.id})">✕</button></div>`;
     c.appendChild(div);
+  });
+}
+
+/* ════════════════════════════════
+   RENDER — LINKS
+════════════════════════════════ */
+function renderLinks(){
+  const c=document.getElementById('links-list');
+  c.querySelectorAll('.link-item').forEach(el=>el.remove());
+  const empty=document.getElementById('links-empty');
+  empty.style.display=links.length?'none':'block';
+  links.forEach(l=>{
+    const div=document.createElement('div');div.className='link-item';
+    const icon=l.url.includes('youtube')?'▶️':l.url.includes('amazon')?'🛒':'🔗';
+    div.innerHTML=`
+      <span class="link-icon">${icon}</span>
+      <a href="${esc(l.url)}" target="_blank" rel="noopener" title="${esc(l.url)}">${esc(l.title)}</a>
+      <button class="btn btn-ghost btn-xs" onclick="deleteLink(${l.id})" style="flex-shrink:0">✕</button>`;
+    c.insertBefore(div,empty);
   });
 }
 
@@ -658,18 +1286,15 @@ function renderNotes(){
 function buildChartFilters(){
   if(!kmHistory.length){document.getElementById('chart-filters').innerHTML='';return;}
   const years=[...new Set(kmHistory.map(e=>new Date(e.recorded_at).getFullYear()))].sort();
-  let html=`<button class="cf-btn ${chartFilter.type==='all'?'active':''}" onclick="setChartFilter('all',null)">Tutto</button>`;
-  html+=`<span class="cf-sep">│</span>`;
+  let html=`<button class="cf-btn ${chartFilter.type==='all'?'active':''}" onclick="setChartFilter('all',null)">Tutto</button><span class="cf-sep">│</span>`;
   years.forEach(y=>{
     html+=`<button class="cf-btn ${chartFilter.type==='year'&&chartFilter.value===y?'active':''}" onclick="setChartFilter('year',${y})">${y}</button>`;
-    const months=[...new Set(kmHistory
-      .filter(e=>new Date(e.recorded_at).getFullYear()===y)
-      .map(e=>new Date(e.recorded_at).getMonth()))].sort((a,b)=>a-b);
+    const months=[...new Set(kmHistory.filter(e=>new Date(e.recorded_at).getFullYear()===y).map(e=>new Date(e.recorded_at).getMonth()))].sort((a,b)=>a-b);
     if(months.length>1){
       months.forEach(mo=>{
         const lbl=new Date(y,mo,1).toLocaleDateString('it',{month:'short'});
         const k=`${y}-${mo}`;
-        html+=`<button class="cf-btn ${chartFilter.type==='month'&&chartFilter.value===k?'active':''}" onclick="setChartFilter('month','${k}')" style="font-size:.58rem">${lbl}</button>`;
+        html+=`<button class="cf-btn ${chartFilter.type==='month'&&chartFilter.value===k?'active':''}" onclick="setChartFilter('month','${k}')" style="font-size:.6rem">${lbl}</button>`;
       });
     }
   });
@@ -687,7 +1312,7 @@ function getFilteredHistory(){
 }
 
 /* ════════════════════════════════
-   CHART — linee tagliandi
+   CHART
 ════════════════════════════════ */
 function renderChart(){
   const canvas=document.getElementById('km-chart');
@@ -695,16 +1320,9 @@ function renderChart(){
   const filtered=getFilteredHistory();
   if(filtered.length<2){canvas.style.display='none';msg.style.display='block';return;}
   canvas.style.display='block';msg.style.display='none';
-
-  const labels=filtered.map(e=>{
-    const d=new Date(e.recorded_at);
-    return d.toLocaleDateString('it',{day:'2-digit',month:'short',year:'2-digit'});
-  });
+  const labels=filtered.map(e=>{const d=new Date(e.recorded_at);return d.toLocaleDateString('it',{day:'2-digit',month:'short',year:'2-digit'});});
   const data=filtered.map(e=>e.km);
-  const minKm=Math.min(...data)*0.96;
-  const maxKm=Math.max(...data)*1.04;
-
-  // annotazioni linee orizzontali per ogni tagliando nel range visibile
+  const minKm=Math.min(...data)*0.96,maxKm=Math.max(...data)*1.04;
   const annotations={};
   MILESTONES.forEach(m=>{
     if(m.km<minKm||m.km>maxKm)return;
@@ -713,75 +1331,81 @@ function renderChart(){
       type:'line',yMin:m.km,yMax:m.km,
       borderColor:done?'rgba(27,138,75,.4)':'rgba(200,16,46,.35)',
       borderWidth:1,borderDash:[5,4],
-      label:{
-        content:`${(m.km/1000).toFixed(0)}k`,
-        display:true,position:'end',
+      label:{content:`${(m.km/1000).toFixed(0)}k`,display:true,position:'end',
         font:{family:'Barlow Condensed',size:9,weight:'bold'},
         color:done?'#1B8A4B':'#C8102E',
-        backgroundColor:'rgba(255,255,255,.75)',
-        padding:{x:3,y:1}
-      }
+        backgroundColor:'rgba(255,255,255,.8)',padding:{x:3,y:1}}
     };
   });
-
   if(kmChart)kmChart.destroy();
   kmChart=new Chart(canvas.getContext('2d'),{
     type:'line',
-    data:{labels,datasets:[{
-      data,
-      borderColor:'#C8102E',
-      backgroundColor:'rgba(200,16,46,.05)',
-      borderWidth:2,
-      pointBackgroundColor:'#C8102E',
-      pointRadius:4,pointHoverRadius:6,
-      fill:true,tension:.3
-    }]},
-    options:{
-      responsive:true,
-      plugins:{
-        legend:{display:false},
+    data:{labels,datasets:[{data,
+      borderColor:'#C8102E',backgroundColor:'rgba(200,16,46,.06)',
+      borderWidth:2.5,pointBackgroundColor:'#C8102E',pointRadius:4,pointHoverRadius:7,
+      fill:true,tension:.3}]},
+    options:{responsive:true,
+      plugins:{legend:{display:false},
         tooltip:{callbacks:{label:c=>`${c.parsed.y.toLocaleString('it')} km`}},
-        annotation:{annotations}
-      },
+        annotation:{annotations}},
       scales:{
         y:{min:minKm,max:maxKm,
-          ticks:{callback:v=>`${(v/1000).toFixed(0)}k`,font:{family:'Barlow Condensed',size:10}},
+          ticks:{callback:v=>`${(v/1000).toFixed(0)}k`,font:{family:'Barlow Condensed',size:11}},
           grid:{color:'#EEEEEE'}},
-        x:{ticks:{font:{family:'Barlow Condensed',size:10},maxRotation:35},grid:{display:false}}
-      }
-    }
+        x:{ticks:{font:{family:'Barlow Condensed',size:11},maxRotation:35},grid:{display:false}}
+      }}
   });
 }
 
 /* ════════════════════════════════
-   MODAL ALERT
+   MODAL / ALERTS
 ════════════════════════════════ */
+function buildAlertsList(){
+  const out=[];
+  MILESTONES.forEach(m=>{if(!schedDone[m.km]?.eseguito&&m.km<=currentKm)out.push({label:m.label,type:'mile',diff:currentKm-m.km});});
+  PERIODIC.forEach(pt=>{
+    const last=periodicSt[pt.key]?.last_km||0;
+    const next=Math.ceil((last+1)/pt.interval)*pt.interval;
+    if(next<=currentKm)out.push({label:pt.label,type:'per',diff:currentKm-next,icon:pt.icon});
+  });
+  // deadline overdue
+  DEADLINES_DEF.forEach(def=>{
+    const d=deadlines[def.key];
+    if(d?.expiry_date){
+      const daysLeft=Math.round((new Date(d.expiry_date)-new Date(today()))/(86400000));
+      if(daysLeft<30)out.push({label:`${def.label} scade in ${daysLeft<0?'SCADUTO':daysLeft+' giorni'}`,type:'dl',days:daysLeft});
+    }
+  });
+  return out;
+}
 function checkAlerts(){
   const omile=MILESTONES.filter(m=>!schedDone[m.km]?.eseguito&&m.km<=currentKm);
-  const oper=PERIODIC.filter(pt=>{
-    const last=periodicSt[pt.key]?.last_km||0;
-    return Math.ceil((last+1)/pt.interval)*pt.interval<=currentKm;
+  const oper=PERIODIC.filter(pt=>{const last=periodicSt[pt.key]?.last_km||0;return Math.ceil((last+1)/pt.interval)*pt.interval<=currentKm;});
+  const odl=DEADLINES_DEF.filter(def=>{const d=deadlines[def.key];return d?.expiry_date&&Math.round((new Date(d.expiry_date)-new Date(today()))/(86400000))<30;});
+  const ocdl=customDeadlines.filter(d=>{
+    if(d.type==='km'&&d.km) return currentKm>=d.km-200;
+    if(d.type==='date'&&d.date) return Math.round((new Date(d.date)-new Date(today()))/(86400000))<30;
+    return false;
   });
-  if(!omile.length&&!oper.length)return;
+  if(!omile.length&&!oper.length&&!odl.length&&!ocdl.length)return;
   let html='';
   if(omile.length){
     html+=`<div class="m-sec">🔧 Tagliandi da Eseguire</div>`;
-    omile.forEach(m=>{
-      const diff=currentKm-m.km;
-      html+=`<div class="m-item ${diff>500?'ov':'wa'}"><div class="mi">⚠️</div>
-        <div><div class="mt">${esc(m.label)}</div>
-        <div class="ms">Scaduto di ${diff.toLocaleString('it')} km — ${m.ops.slice(0,3).join(', ')}</div></div></div>`;
-    });
+    omile.forEach(m=>{const diff=currentKm-m.km;html+=`<div class="m-item ${diff>500?'ov':'wa'}"><div class="mi">⚠️</div><div><div class="mt">${esc(m.label)}</div><div class="ms">Scaduto di ${diff.toLocaleString('it')} km</div></div></div>`;});
   }
   if(oper.length){
     html+=`<div class="m-sec">🔗 Controlli Periodici</div>`;
-    oper.forEach(pt=>{
-      const last=periodicSt[pt.key]?.last_km||0;
-      const next=Math.ceil((last+1)/pt.interval)*pt.interval;
-      const diff=currentKm-next;
-      html+=`<div class="m-item ${diff>pt.interval*.5?'ov':'wa'}"><div class="mi">${pt.icon}</div>
-        <div><div class="mt">${esc(pt.label)}</div>
-        <div class="ms">+${diff.toLocaleString('it')} km scaduto — ultimo: ${last?last.toLocaleString('it')+' km':'mai'}</div></div></div>`;
+    oper.forEach(pt=>{const last=periodicSt[pt.key]?.last_km||0;const next=Math.ceil((last+1)/pt.interval)*pt.interval;const diff=currentKm-next;html+=`<div class="m-item ${diff>pt.interval*.5?'ov':'wa'}"><div class="mi">${pt.icon}</div><div><div class="mt">${esc(pt.label)}</div><div class="ms">+${diff.toLocaleString('it')} km scaduto</div></div></div>`;});
+  }
+  if(odl.length){
+    html+=`<div class="m-sec">📅 Scadenze Documenti</div>`;
+    odl.forEach(def=>{const d=deadlines[def.key];const days=Math.round((new Date(d.expiry_date)-new Date(today()))/(86400000));html+=`<div class="m-item ${days<0?'ov':'wa'}"><div class="mi">${def.icon}</div><div><div class="mt">${def.label}</div><div class="ms">${days<0?`Scaduta ${Math.abs(days)} giorni fa`:`Scade in ${days} giorni`}</div></div></div>`;});
+  }
+  if(ocdl.length){
+    html+=`<div class="m-sec">📌 Scadenze Custom</div>`;
+    ocdl.forEach(d=>{
+      const sub=d.type==='km'?`${d.km?.toLocaleString('it')} km (sei a ${currentKm.toLocaleString('it')})`:d.date;
+      html+=`<div class="m-item wa"><div class="mi">${d.icon}</div><div><div class="mt">${esc(d.label)}</div><div class="ms">${sub}</div></div></div>`;
     });
   }
   document.getElementById('modal-body').innerHTML=html;
